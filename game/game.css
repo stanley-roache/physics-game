@@ -1,0 +1,14 @@
+/* Force display container to take up the page exactly. */
+
+html, body {
+  width: 100%;
+  height: 100%;
+  margin: none;
+}
+
+#game-display {
+  background: grey;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+}
