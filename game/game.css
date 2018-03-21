@@ -12,3 +12,11 @@ html, body {
   height: 100%;
   margin: 0;
 }
+
+.blob {
+  border-radius: 50%;
+  background: blue;
+  position: absolute;
+  z-index: 100;
+  display: block;
+}
