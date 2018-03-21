@@ -35,8 +35,8 @@ class Blob {
   }
 
   updateDiv() {
-    this.blobDiv.style.left = this.position[1] + 'px';
-    this.blobDiv.style.bottom = this.position[0] + 'px';
+    this.blobDiv.style.left = this.position[0] + 'px';
+    this.blobDiv.style.bottom = this.position[1] + 'px';
     this.blobDiv.style.height = this.radius*2 + 'px';
     this.blobDiv.style.width = this.radius*2 + 'px';
   }
@@ -54,16 +54,46 @@ class Blob {
     this.velocity[1] *= 0.95;
   }
 
-  // This function applies a force to the blob and accelerates it
+  // This function checks if the arrow keys are pressed and accelerates blob in one of 8 directions
+  // by the constant speedUp
   accelerate() {
-    if (this.force.up)        this.velocity[1] += speedUp;
-    else if (this.force.down) this.velocity[1] -= speedUp;
-
-    if (this.force.right)     this.velocity[0] += speedUp;
-    else if (this.force.left) this.velocity[0] -= speedUp;
+    if (this.force.up) {
+      if (this.force.left) {
+        //up and left
+        this.velocity[1] += speedUp*diagonal;
+        this.velocity[0] -= speedUp*diagonal;
+      } else if (this.force.right) {
+        // up and right
+        this.velocity[1] += speedUp*diagonal;
+        this.velocity[0] += speedUp*diagonal;
+      } else {
+        // straight up
+        this.velocity[1] += speedUp;
+      }
+    } else if (this.force.down) {
+      if (this.force.left) {
+        // down and left
+        this.velocity[1] -= speedUp*diagonal;
+        this.velocity[0] -= speedUp*diagonal;
+      } else if (this.force.right) {
+        // down and right
+        this.velocity[1] -= speedUp*diagonal;
+        this.velocity[0] += speedUp*diagonal;
+      } else {
+        // straight down
+        this.velocity[1] -= speedUp;
+      }
+    } else if (this.force.right) {
+      // right
+      this.velocity[0] += speedUp;
+    } else if (this.force.left) {
+      // left
+      this.velocity[0] -= speedUp;
+    }
   }
 
   update() {
+    this.accelerate();
     this.move();
     this.viscosity();
     this.updateDiv();
@@ -89,6 +119,7 @@ var initialSize = 50,
     initialSpeed = [10,10];
 var player;
 const speedUp = 1;
+const diagonal = 1.0/Math.sqrt(2);
 
 window.onload = function() {
   player = new Blob(
