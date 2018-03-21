@@ -5,10 +5,29 @@ class Blob {
     this.radius = radius;
     this.position = position;
     this.velocity = velocity;
+    this.force = {
+      right: false,
+      left: false,
+      up: false,
+      down: false
+    }
 
     this.blobDiv = document.createElement('div');
     this.blobDiv.classList.add('blob');
     document.getElementById('game-display').appendChild(this.blobDiv);
+  }
+
+  setDown(down) {
+    this.force.down = down;
+  }
+  setUp(up) {
+    this.force.up = up;
+  }
+  setLeft(left) {
+    this.force.left = left;
+  }
+  setRight(right) {
+    this.force.right = right;
   }
 
   getAbsVel() {
@@ -36,9 +55,12 @@ class Blob {
   }
 
   // This function applies a force to the blob and accelerates it
-  accelerate(force) {
-    this.velocity[0] += force[0];
-    this.velocity[1] += force[1];
+  accelerate() {
+    if (this.force.up)        this.velocity[1] += speedUp;
+    else if (this.force.down) this.velocity[1] -= speedUp;
+
+    if (this.force.right)     this.velocity[0] += speedUp;
+    else if (this.force.left) this.velocity[0] -= speedUp;
   }
 
   update() {
@@ -65,14 +87,20 @@ var fps = 50;
 var initialSize = 50,
     initialPos = [50,50],
     initialSpeed = [10,10];
+var player;
+const speedUp = 1;
 
 window.onload = function() {
-  var playerBlob = new Blob(
+  player = new Blob(
     initialSize,
     initialPos,
     initialSpeed
   );
-  blobs.push(playerBlob);
+
+  document.addEventListener('keydown', keyDown, false);
+  document.addEventListener('keyup', keyUp, false);
+
+  blobs.push(player);
   iteration();
 };
 
@@ -82,4 +110,30 @@ function iteration() {
   }
 
   t=setTimeout("iteration()",1000/fps);
+}
+
+function keyDown(e) {
+    if (e.keyCode === 39) {
+        player.setRight(true);
+    } else if (e.keyCode === 37) {
+      player.setLeft(true);
+    }
+    if (e.keyCode === 38) {
+      player.setUp(true);
+    } else if (e.keyCode === 40) {
+      player.setDown(true);
+    }
+}
+
+function keyUp(e) {
+    if (e.keyCode === 39) {
+      player.setRight(false);
+    } else if (e.keyCode === 37) {
+      player.setLeft(false);
+    }
+    if (e.keyCode === 38) {
+      player.setUp(false);
+    } else if (e.keyCode === 40) {
+      player.setDown(false);
+    }
 }
