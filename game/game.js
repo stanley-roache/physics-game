@@ -10,13 +10,16 @@ var windowSize = {
 
 var initialSize = 10,
     initialPos = [50,50],
-    initialSpeed = [10,10];
+    initialSpeed = [0,0];
 var player;
 
 
 const speedUp = 0.2,
       diagonal = 1.0/Math.sqrt(2),
       maxPop = 15;
+      drag = 0.001;
+      appetite = 0.0001;
+      minSize = 10;
 
 window.onload = function() {
   gameWindow = document.getElementById('game-display');
@@ -56,17 +59,37 @@ function iteration() {
     blobs[i].update();
 
     // make player eat blobs it is in contact with
-    if (Blob.getDistance(player,blobs[i],false) <= 0 && player.biggerThan(blobs[i])) {
-      // combine blobs, create new player blob and carry over force
-      var currentForce = player.getForce();
-      player = player.consume(blobs[i]);
-      player.setForce(currentForce);
-      player.updateDiv();
+    if (Blob.getDistance(player,blobs[i],false) < 0) {
+      if (player.biggerThan(blobs[i])) {
+        // combine blobs, create new player blob and carry over force
+        var currentForce = player.getForce();
+        player = player.consume(blobs[i]);
+        player.setForce(currentForce);
+        // player.updateDiv();
 
-      blobs[i] = null;
-    } else {
-      newBlobs.push(blobs[i]);
+        blobs[i] = null;
+      } else {
+        // eaten!
+        blobs[i] = blobs[i].consume(player);
+      }
+      continue;
     }
+
+
+    // blob eats other blobs
+    for (var j = i + 1; j < blobs.length; j++) {
+      if (!blobs[j]) continue;
+      if (Blob.getDistance(blobs[i],blobs[j],false) < 0) {
+        if (blobs[i].biggerThan(blobs[j])) {
+          blobs[i] = blobs[i].consume(blobs[j]);
+          blobs[j] = null;
+        } else {
+          blobs[i] = blobs[j].consume(blobs[i]);
+          blobs[j] = null;
+        }
+      }
+    }
+    newBlobs.push(blobs[i]);
   }
 
   blobs = newBlobs;
@@ -81,9 +104,9 @@ function repopulate() {
 
   if (blobs.length < maxPop && Math.random() > 0.99) {
     var newblob = new Blob(
-      Math.random() * 10 + 5,
+      Math.random() * player.getRadius()*0.8 + player.getRadius()*0.75,
       [0,0],
-      [Math.random()*30 - 15,Math.random()*30 - 15],
+      [Math.random()*10 - 5,Math.random()*10 - 5],
       false
     );
     blobs.push(newblob);
@@ -251,13 +274,24 @@ class Blob {
   move() {
     this.position[0] += this.velocity[0];
     this.position[1] += this.velocity[1];
-    // this.viscosity();
   }
 
-  // This function decellerates the blob proportional to it's current velocity
+  // This function decellerates the blob proportional to it's current velocity and its radius
   viscosity() {
-    this.velocity[0] *= 0.95;
-    this.velocity[1] *= 0.95;
+    // this.velocity[0] *= (1-drag*Math.pow(this.radius,2));
+    // this.velocity[1] *= (1-drag*Math.pow(this.radius,2));
+    this.velocity[0] *= (1-drag*Math.sqrt(this.radius)*Math.pow(this.velocity[0],2));
+    this.velocity[1] *= (1-drag*Math.sqrt(this.radius)*Math.pow(this.velocity[1],2));
+  }
+
+  hunger() {
+    if (this.radius > minSize) {
+      this.radius *= (1-appetite);
+    }
+  }
+
+  getRadius() {
+    return this.radius;
   }
 
   // This function checks if the arrow keys are pressed and accelerates blob in one of 8 directions
@@ -307,6 +341,7 @@ class Blob {
   update() {
     this.move();
     this.viscosity();
+    this.hunger();
     this.accelerate();
     this.teleport();
     this.updateDiv();
