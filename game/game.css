@@ -1,0 +1,24 @@
+/* Force display container to take up the page exactly. */
+
+html, body {
+  width: 100%;
+  height: 100%;
+  margin: none;
+  overflow: hidden;
+}
+
+#game-display {
+  background: black;
+  width: 100%;
+  height: 100%;
+  margin: none;
+  padding: none;
+}
+
+.blob {
+  border-radius: 50%;
+  background: grey;
+  position: absolute;
+  z-index: 100;
+  display: block;
+}
