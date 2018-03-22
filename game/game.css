@@ -22,3 +22,7 @@ html, body {
   z-index: 100;
   display: block;
 }
+
+#player {
+  background: blue;
+}

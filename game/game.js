@@ -8,13 +8,13 @@ var windowSize = {
 }
 
 
-var initialSize = 50,
+var initialSize = 10,
     initialPos = [50,50],
     initialSpeed = [10,10];
 var player;
 
 
-const speedUp = 1,
+const speedUp = 0.2,
       diagonal = 1.0/Math.sqrt(2),
       maxPop = 15;
 
@@ -22,17 +22,22 @@ window.onload = function() {
   gameWindow = document.getElementById('game-display');
   updateWindowSize();
 
-  player = new Blob(
-    initialSize,
-    initialPos,
-    initialSpeed
-  );
+  createPlayer();
 
   document.addEventListener('keydown', keyDown, false);
   document.addEventListener('keyup', keyUp, false);
 
   iteration();
 };
+
+function createPlayer() {
+  player = new Blob(
+    initialSize,
+    initialPos,
+    initialSpeed,
+    true
+  );
+}
 
 function iteration() {
   repopulate();
@@ -76,9 +81,10 @@ function repopulate() {
 
   if (blobs.length < maxPop && Math.random() > 0.99) {
     var newblob = new Blob(
-      Math.random() * 50 + 25,
+      Math.random() * 10 + 5,
       [0,0],
-      [Math.random()*30 - 15,Math.random()*30 - 15]
+      [Math.random()*30 - 15,Math.random()*30 - 15],
+      false
     );
     blobs.push(newblob);
   }
@@ -124,7 +130,7 @@ function keyUp(e) {
 // This is the class for an individual blob in the game where blobs eat each other
 
 class Blob {
-  constructor (radius, position, velocity) {
+  constructor (radius, position, velocity, isPlayer) {
     this.radius = radius;
     this.position = position;
     this.velocity = velocity;
@@ -143,6 +149,10 @@ class Blob {
     this.blobDiv = document.createElement('div');
     this.blobDiv.classList.add('blob');
     gameWindow.appendChild(this.blobDiv);
+
+    if (isPlayer) {
+      this.blobDiv.id = 'player';
+    }
   }
 
   setDown(down) {
@@ -336,7 +346,8 @@ class Blob {
     return new Blob(
       newRadius,
       newPosition,
-      newVelocity
+      newVelocity,
+      (this === player)
     );
   }
 
