@@ -14,10 +14,10 @@ var initialSize = 10,
 var player;
 
 
-const speedUp = 0.2,
+const speedUp = 0.5,
       diagonal = 1.0/Math.sqrt(2),
       maxPop = 15;
-      drag = 0.001;
+      drag = 0.004;
       appetite = 0.0001;
       minSize = 10;
 
