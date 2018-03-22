@@ -47,6 +47,7 @@ function iteration() {
     // it might be null, skip if it is
     if (!blobs[i]) continue;
 
+    blobs[i].blobMovement();
     blobs[i].update();
 
     // make player eat blobs it is in contact with
@@ -136,6 +137,9 @@ class Blob {
       down: false
     }
 
+    // blob only
+    this.moving = false;
+
     this.blobDiv = document.createElement('div');
     this.blobDiv.classList.add('blob');
     gameWindow.appendChild(this.blobDiv);
@@ -158,6 +162,68 @@ class Blob {
   }
   setForce(force) {
     this.force = force;
+  }
+
+  blobMovement() {
+    if (this.moving && Math.random() > 0.95) {
+      this.newRandomDirection();
+    }
+    if (Math.random() > 0.993) {
+      this.toggleMoving();
+      if (this.moving) {
+        this.newRandomDirection();
+        return;
+      }
+    }
+  }
+
+  newRandomDirection() {
+    this.force.left = false;
+    this.force.right = false;
+    this.force.up = false;
+    this.force.down = false;
+    switch (Math.floor(Math.random()*8)) {
+      case 0:
+        this.force.left = true;
+        break;
+      case 1:
+        this.force.left = true;
+        this.force.up = true;
+        break;
+      case 2:
+        this.force.up = true;
+        break;
+      case 3:
+        this.force.right = true;
+        this.force.up = true;
+        break;
+      case 4:
+        this.force.right = true;
+        break;
+      case 5:
+        this.force.right = true;
+        this.force.down = true;
+        break;
+      case 6:
+        this.force.down = true;
+        break;
+      case 7:
+        this.force.left = true;
+        this.force.down = true;
+        break;
+    }
+  }
+
+  isMoving() {
+    return this.moving;
+  }
+
+  setMoving(moving) {
+    this.moving = moving;
+  }
+
+  toggleMoving() {
+    this.moving = !(this.moving);
   }
 
   getAbsVel() {
