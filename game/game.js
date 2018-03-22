@@ -16,7 +16,7 @@ var player;
 
 const speedUp = 1,
       diagonal = 1.0/Math.sqrt(2),
-      maxPop = 5;
+      maxPop = 15;
 
 window.onload = function() {
   gameWindow = document.getElementById('game-display');
@@ -50,8 +50,7 @@ function iteration() {
     blobs[i].update();
 
     // make player eat blobs it is in contact with
-    if (Blob.getDistance(player,blobs[i],false) <= 0) {
-
+    if (Blob.getDistance(player,blobs[i],false) <= 0 && player.biggerThan(blobs[i])) {
       // combine blobs, create new player blob and carry over force
       var currentForce = player.getForce();
       player = player.consume(blobs[i]);
@@ -77,8 +76,8 @@ function repopulate() {
   if (blobs.length < maxPop && Math.random() > 0.98) {
     var newblob = new Blob(
       Math.random() * 50 + 25,
-      [Math.random() * windowSize.horizontal, Math.random() * windowSize.vertical],
-      [3,15]
+      [0,0],
+      [Math.random()*30 - 15,Math.random()*30 - 15]
     );
     blobs.push(newblob);
   }
@@ -128,6 +127,7 @@ class Blob {
     this.radius = radius;
     this.position = position;
     this.velocity = velocity;
+
     // player only
     this.force = {
       right: false,
@@ -240,22 +240,33 @@ class Blob {
     this.blobDiv.parentNode.removeChild(this.blobDiv);
   }
 
+  biggerThan(other) {
+    return (this.radius > other.radius);
+  }
+
+  // this gets called when blobs contact each other and the bigger one eats the smaller one
   consume(other) {
+    // relative mass
     var weighting = Math.pow(other.radius,3) / (Math.pow(this.radius,3)+Math.pow(other.radius,3)); 
+    // calculates centre of mass of both blobs
     var newPosition = [
       this.position[0] + (other.position[0] - this.position[0]) * weighting,
       this.position[1] + (other.position[1] - this.position[1]) * weighting
     ];
+    // calculates valocity based on total momentum
     var newVelocity = [
       this.velocity[0] + (other.velocity[0] - this.velocity[0]) * weighting,
       this.velocity[1] + (other.velocity[1] - this.velocity[1]) * weighting
     ];
+
+    // new size
     var newRadius = Math.pow((Math.pow(this.radius,3)+Math.pow(other.radius,3)), 1/3);
 
     // removes old divs from html
     other.deleteDiv();
     this.deleteDiv();
 
+    // returns new Blob
     return new Blob(
       newRadius,
       newPosition,
