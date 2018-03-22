@@ -14,8 +14,9 @@ var initialSize = 50,
 var player;
 
 
-const speedUp = 1;
-const diagonal = 1.0/Math.sqrt(2);
+const speedUp = 1,
+      diagonal = 1.0/Math.sqrt(2),
+      maxPop = 5;
 
 window.onload = function() {
   gameWindow = document.getElementById('game-display');
@@ -30,9 +31,58 @@ window.onload = function() {
   document.addEventListener('keydown', keyDown, false);
   document.addEventListener('keyup', keyUp, false);
 
-  blobs.push(player);
   iteration();
 };
+
+function iteration() {
+  repopulate();
+
+  player.update();
+
+  // Each time the array is iterated through a new array is created,
+  // This is because when I tried to use array.filter the resultant array was still the same length
+  var newBlobs = [];
+
+  for (var i = 0; i < blobs.length; i++) {
+    // it might be null, skip if it is
+    if (!blobs[i]) continue;
+
+    blobs[i].update();
+
+    // make player eat blobs it is in contact with
+    if (Blob.getDistance(player,blobs[i],false) <= 0) {
+
+      // combine blobs, create new player blob and carry over force
+      var currentForce = player.getForce();
+      player = player.consume(blobs[i]);
+      player.setForce(currentForce);
+      player.updateDiv();
+
+      blobs[i] = null;
+    } else {
+      newBlobs.push(blobs[i]);
+    }
+  }
+
+  blobs = newBlobs;
+
+  t=setTimeout("iteration()",1000/fps);
+}
+
+function repopulate() {
+  blobs.filter(function(blob) {
+    return (blob != null);
+  });
+
+  if (blobs.length < maxPop && Math.random() > 0.98) {
+    var newblob = new Blob(
+      Math.random() * 50 + 25,
+      [Math.random() * windowSize.horizontal, Math.random() * windowSize.vertical],
+      [3,15]
+    );
+    blobs.push(newblob);
+  }
+}
 
 function updateWindowSize() {
   var windowDimensions = gameWindow.getBoundingClientRect();
@@ -40,14 +90,7 @@ function updateWindowSize() {
   windowSize.vertical   = windowDimensions.height;
 }
 
-function iteration() {
-  for (var i = 0; i < blobs.length; i++) {
-    blobs[i].update();
-  }
-
-  t=setTimeout("iteration()",1000/fps);
-}
-
+// When key pressed
 function keyDown(e) {
     if (e.keyCode === 39) {
       player.setRight(true);
@@ -61,6 +104,7 @@ function keyDown(e) {
     }
 }
 
+//  When key released
 function keyUp(e) {
     if (e.keyCode === 39) {
       player.setRight(false);
@@ -74,6 +118,9 @@ function keyUp(e) {
     }
 }
 
+
+
+
 // This is the class for an individual blob in the game where blobs eat each other
 
 class Blob {
@@ -81,6 +128,7 @@ class Blob {
     this.radius = radius;
     this.position = position;
     this.velocity = velocity;
+    // player only
     this.force = {
       right: false,
       left: false,
@@ -105,14 +153,20 @@ class Blob {
   setRight(right) {
     this.force.right = right;
   }
+  getForce() {
+    return this.force;
+  }
+  setForce(force) {
+    this.force = force;
+  }
 
   getAbsVel() {
     return Math.sqrt(Math.pow(this.velocity[0], 2) + Math.pow(this.velocity[1], 2));
   }
 
   updateDiv() {
-    this.blobDiv.style.left = this.position[0] + 'px';
-    this.blobDiv.style.bottom = this.position[1] + 'px';
+    this.blobDiv.style.left = (this.position[0] - this.radius) + 'px';
+    this.blobDiv.style.bottom = (this.position[1] - this.radius) + 'px';
     this.blobDiv.style.height = this.radius*2 + 'px';
     this.blobDiv.style.width = this.radius*2 + 'px';
   }
@@ -170,8 +224,8 @@ class Blob {
   // When a blob leaves the screen, teleport it to the other side.
   teleport() {
     // out left hand side
-    this.position[0] = ((this.position[0] + windowSize.horizontal + 6*this.radius) % (windowSize.horizontal + 4*this.radius)) - 2*this.radius;
-    this.position[1] = ((this.position[1] + windowSize.vertical + 6*this.radius) % (windowSize.vertical + 4*this.radius)) - 2*this.radius;
+    this.position[0] = ((this.position[0] + windowSize.horizontal) % (windowSize.horizontal));
+    this.position[1] = ((this.position[1] + windowSize.vertical) % (windowSize.vertical));
   }
 
   update() {
@@ -182,8 +236,40 @@ class Blob {
     this.updateDiv();
   }
 
-  // This function checks if two blobs are contacting each other
-  static checkContact (a,b) {
-    return a.radius + b.radius <= Math.sqrt(Math.pow(a.position[0] - b.position[0], 2) + Math.pow(a.position[1] - b.position[1], 2)); 
+  deleteDiv() {
+    this.blobDiv.parentNode.removeChild(this.blobDiv);
+  }
+
+  consume(other) {
+    var weighting = Math.pow(other.radius,3) / (Math.pow(this.radius,3)+Math.pow(other.radius,3)); 
+    var newPosition = [
+      this.position[0] + (other.position[0] - this.position[0]) * weighting,
+      this.position[1] + (other.position[1] - this.position[1]) * weighting
+    ];
+    var newVelocity = [
+      this.velocity[0] + (other.velocity[0] - this.velocity[0]) * weighting,
+      this.velocity[1] + (other.velocity[1] - this.velocity[1]) * weighting
+    ];
+    var newRadius = Math.pow((Math.pow(this.radius,3)+Math.pow(other.radius,3)), 1/3);
+
+    // removes old divs from html
+    other.deleteDiv();
+    this.deleteDiv();
+
+    return new Blob(
+      newRadius,
+      newPosition,
+      newVelocity
+    );
+  }
+
+  // This function checks how far apart two blobs are, either their surfaces or their centres
+  static getDistance (a,b, fromCentre) {
+    var centre = Math.sqrt(
+      Math.pow((a.position[0] - b.position[0]), 2) + 
+      Math.pow((a.position[1] - b.position[1]), 2)
+    );
+    if (fromCentre) return centre;
+    else return (centre - (a.radius + b.radius)); 
   }
 }
