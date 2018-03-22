@@ -74,7 +74,7 @@ function repopulate() {
     return (blob != null);
   });
 
-  if (blobs.length < maxPop && Math.random() > 0.98) {
+  if (blobs.length < maxPop && Math.random() > 0.99) {
     var newblob = new Blob(
       Math.random() * 50 + 25,
       [0,0],
