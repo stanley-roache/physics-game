@@ -14,7 +14,7 @@ class Blob {
 
     this.blobDiv = document.createElement('div');
     this.blobDiv.classList.add('blob');
-    document.getElementById('game-display').appendChild(this.blobDiv);
+    gameWindow.appendChild(this.blobDiv);
   }
 
   setDown(down) {
@@ -91,6 +91,11 @@ class Blob {
       this.velocity[0] -= speedUp;
     }
   }
+  // When a blob leaves the screen, teleport it to the other side.
+  teleport() {
+    // out left hand side
+    if this.position[0] < -this.radius
+  }
 
   update() {
     this.accelerate();
@@ -114,10 +119,19 @@ class Blob {
 var blobs = [];
 var t;
 var fps = 50;
+var gameWindow = document.getElementById('game-display');
+var windowSize = {
+  horizontal: 0,
+  vertical: 0
+}
+
+
 var initialSize = 50,
     initialPos = [50,50],
     initialSpeed = [10,10];
 var player;
+
+
 const speedUp = 1;
 const diagonal = 1.0/Math.sqrt(2);
 
@@ -128,12 +142,19 @@ window.onload = function() {
     initialSpeed
   );
 
+  updateWindowSize();
+
   document.addEventListener('keydown', keyDown, false);
   document.addEventListener('keyup', keyUp, false);
 
   blobs.push(player);
   iteration();
 };
+
+function updateWindowSize() {
+  windowSize.horizontal = gameWindow.offsetWidth;
+  windowSize.vertical   = gameWindow.offsetHeight;
+}
 
 function iteration() {
   for (var i = 0; i < blobs.length; i++) {
