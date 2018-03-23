@@ -25,6 +25,8 @@ window.onload = function() {
   gameWindow = document.getElementById('game-display');
   updateWindowSize();
 
+  initialPos = [windowSize.horizontal/2, windowSize.vertical/2];
+
   createPlayer();
 
   document.addEventListener('keydown', keyDown, false);
