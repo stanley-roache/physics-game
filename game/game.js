@@ -17,6 +17,7 @@ var player;
 const speedUp = 0.5,
       diagonal = 1.0/Math.sqrt(2),
       maxPop = 15;
+      // maxMass = ?;
       drag = 0.004;
       appetite = 0.0001;
       minSize = 10;
@@ -44,7 +45,9 @@ function createPlayer() {
   );
 }
 
+// this function gets called several times a second and has to loop through everything to make the game real time
 function iteration() {
+  // add new blobs
   repopulate();
 
   player.update();
@@ -60,7 +63,7 @@ function iteration() {
     blobs[i].blobMovement();
     blobs[i].update();
 
-    // make player eat blobs it is in contact with
+    // check if the player is touching it
     if (Blob.getDistance(player,blobs[i],false) < 0) {
       if (player.biggerThan(blobs[i])) {
         // combine blobs, create new player blob and carry over force
@@ -80,8 +83,11 @@ function iteration() {
 
     // blob eats other blobs
     for (var j = i + 1; j < blobs.length; j++) {
+      // skip null blobs
       if (!blobs[j]) continue;
+      // are they touching
       if (Blob.getDistance(blobs[i],blobs[j],false) < 0) {
+        // is the current bigger or smaller
         if (blobs[i].biggerThan(blobs[j])) {
           blobs[i] = blobs[i].consume(blobs[j]);
           blobs[j] = null;
@@ -91,26 +97,39 @@ function iteration() {
         }
       }
     }
+    // make sure the remaining blob gets carried to the next array
     newBlobs.push(blobs[i]);
   }
 
+  // the array is updated with remaining blobs in an array with no nulls
   blobs = newBlobs;
 
   t=setTimeout("iteration()",1000/fps);
 }
 
 function repopulate() {
-  blobs.filter(function(blob) {
-    return (blob != null);
-  });
-
+  // adds new blobs randomly as long as the max populatoin isn't reached
   if (blobs.length < maxPop && Math.random() > 0.99) {
+    // This bit randomly assigns a point of entry along the border of the play area
+    var entryPoint
+    var x = Math.random()*4;
+    if (x < 1) {
+      entryPoint = [0,windowSize.vertical*x];
+    } else if (x < 2) {
+      entryPoint = [windowSize.horizontal*(x-1),0];
+    } else  if (x < 3) {
+      entryPoint = [windowSize.horizontal,windowSize.vertical*(x-2)];
+    } else {
+      entryPoint = [windowSize.horizontal*(x-3),0];
+    }
+    // create the new blob
     var newblob = new Blob(
       Math.random() * player.getRadius()*0.8 + player.getRadius()*0.75,
-      [0,0],
-      [Math.random()*10 - 5,Math.random()*10 - 5],
+      entryPoint,
+      [Math.random()*4 - 2,Math.random()*4 - 2],
       false
     );
+    // put it in with its mates
     blobs.push(newblob);
   }
 }
@@ -152,7 +171,7 @@ function keyUp(e) {
 
 
 
-// This is the class for an individual blob in the game where blobs eat each other
+// This is the class for an individual blob
 
 class Blob {
   constructor (radius, position, velocity, isPlayer) {
@@ -171,6 +190,7 @@ class Blob {
     // blob only
     this.moving = false;
 
+    // creates a corresponding div to display on screen
     this.blobDiv = document.createElement('div');
     this.blobDiv.classList.add('blob');
     gameWindow.appendChild(this.blobDiv);
@@ -249,6 +269,8 @@ class Blob {
     }
   }
 
+
+  // some of these moving functions might be unnecessary
   isMoving() {
     return this.moving;
   }
@@ -261,10 +283,12 @@ class Blob {
     this.moving = !(this.moving);
   }
 
+  // definitely unnecessary but I'll levae in case
   getAbsVel() {
     return Math.sqrt(Math.pow(this.velocity[0], 2) + Math.pow(this.velocity[1], 2));
   }
 
+  // update the div position and size
   updateDiv() {
     this.blobDiv.style.left = (this.position[0] - this.radius) + 'px';
     this.blobDiv.style.bottom = (this.position[1] - this.radius) + 'px';
@@ -286,6 +310,7 @@ class Blob {
     this.velocity[1] *= (1-drag*Math.sqrt(this.radius)*Math.pow(this.velocity[1],2));
   }
 
+  // gradually shrinks blob
   hunger() {
     if (this.radius > minSize) {
       this.radius *= (1-appetite);
@@ -333,6 +358,36 @@ class Blob {
       this.velocity[0] -= speedUp;
     }
   }
+
+  borderBounce() {
+    this.isMoving = true;
+    if (this.position[0] < -this.radius) {
+      this.velocity[0] += speedUp;
+      if (!this.isPlayer) {
+        this.force.left = false;
+        this.force.right = true;
+      }
+    } else if (this.position[0] > this.radius + windowSize.horizontal) {
+      if (!this.isPlayer) {
+        this.force.right = false;
+        this.force.left = true;
+      }
+      this.velocity[0] -= speedUp;
+    } else if (this.position[1] < -this.radius) {
+      if (!this.isPlayer) {
+        this.force.down = false;
+        this.force.up = true;
+      }
+      this.velocity[1] += speedUp;
+    } else if (this.position[1] > this.radius + windowSize.vertical) {
+      if (!this.isPlayer) {
+        this.force.up = false;
+        this.force.down = true;
+      }
+      this.velocity[1] -= speedUp;
+    }
+  }
+
   // When a blob leaves the screen, teleport it to the other side.
   teleport() {
     // out left hand side
@@ -340,12 +395,14 @@ class Blob {
     this.position[1] = ((this.position[1] + windowSize.vertical) % (windowSize.vertical));
   }
 
+  // this master call contains all the things that need to happen to each blob each iteration
   update() {
     this.move();
     this.viscosity();
     this.hunger();
     this.accelerate();
-    this.teleport();
+    // this.teleport();
+    this.borderBounce();
     this.updateDiv();
   }
 
