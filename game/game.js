@@ -7,10 +7,16 @@ var windowSize = {
   vertical: 0
 }
 
+var keyState = {
+  left: false,
+  right: false,
+  down: false,
+  up: false
+}
+
 var player,
     initialSize = 10,
-    initialPos = [50,50],
-    initialSpeed = [0,0];
+    initialPos = [50,50];
 
 const speedUp = 0.5,
       diagonal = 1.0/Math.sqrt(2),
@@ -40,7 +46,7 @@ function createPlayer() {
     initialSize,
     // the slice makes sure a copy of the array is being passed, otherwise location and speed persist through death
     initialPos.slice(),
-    initialSpeed.slice(),
+    [0,0],
     true
   );
 }
@@ -152,34 +158,30 @@ function updateWindowSize() {
 
 // When key pressed
 function keyDown(e) {
-  if (player) {
-    if (e.keyCode === 39) {
-      player.setRight(true);
-    } else if (e.keyCode === 37) {
-      player.setLeft(true);
-    }
-    if (e.keyCode === 38) {
-      player.setUp(true);
-    } else if (e.keyCode === 40) {
-      player.setDown(true);
-    }
+  if (e.keyCode === 39) {
+    keyState.right = true;
+  } else if (e.keyCode === 37) {
+    keyState.left = true;
+  } else if (e.keyCode === 38) {
+    keyState.up = true;
+  } else if (e.keyCode === 40) {
+    keyState.down = true;
   }
+  if (player) player.updatePlayerForce();
 }
 
 //  When key released
 function keyUp(e) {
-  if (player) {
-    if (e.keyCode === 39) {
-      player.setRight(false);
-    } else if (e.keyCode === 37) {
-      player.setLeft(false);
-    }
-    if (e.keyCode === 38) {
-      player.setUp(false);
-    } else if (e.keyCode === 40) {
-      player.setDown(false);
-    }
+  if (e.keyCode === 39) {
+    keyState.right = false;
+  } else if (e.keyCode === 37) {
+    keyState.left = false;
+  } else if (e.keyCode === 38) {
+    keyState.up = false;
+  } else if (e.keyCode === 40) {
+    keyState.down = false;
   }
+  if (player) player.updatePlayerForce();
 }
 
 // when key pressed
@@ -199,14 +201,7 @@ class Blob {
     this.radius = radius;
     this.position = position;
     this.velocity = velocity;
-
-    // player only
-    this.force = {
-      right: false,
-      left: false,
-      up: false,
-      down: false
-    }
+    this.force = [0,0];
 
     // blob only
     this.moving = false;
@@ -221,23 +216,45 @@ class Blob {
     }
   }
 
-  setDown(down) {
-    this.force.down = down;
-  }
-  setUp(up) {
-    this.force.up = up;
-  }
-  setLeft(left) {
-    this.force.left = left;
-  }
-  setRight(right) {
-    this.force.right = right;
-  }
   getForce() {
     return this.force;
   }
   setForce(force) {
     this.force = force;
+  }
+
+  updatePlayerForce() {
+    if (keyState.up) {
+      if (keyState.left) {
+        //up and left
+        this.force = [-diagonal, diagonal];
+      } else if (keyState.right) {
+        // up and right
+        this.force = [diagonal,diagonal];
+      } else {
+        // straight up
+        this.force = [0,1];
+      }
+    } else if (keyState.down) {
+      if (keyState.left) {
+        // down and left
+        this.force = [-diagonal,-diagonal];
+      } else if (keyState.right) {
+        // down and right
+        this.force = [diagonal,-diagonal];
+      } else {
+        // straight down
+        this.force = [0,-1];
+      }
+    } else if (keyState.right) {
+      // right
+      this.force = [1,0];
+    } else if (keyState.left) {
+      // left
+      this.force = [-1,0];
+    } else {
+      this.force = [0,0]
+    }
   }
 
   blobMovement() {
@@ -254,40 +271,9 @@ class Blob {
   }
 
   newRandomDirection() {
-    this.force.left = false;
-    this.force.right = false;
-    this.force.up = false;
-    this.force.down = false;
-    switch (Math.floor(Math.random()*8)) {
-      case 0:
-        this.force.left = true;
-        break;
-      case 1:
-        this.force.left = true;
-        this.force.up = true;
-        break;
-      case 2:
-        this.force.up = true;
-        break;
-      case 3:
-        this.force.right = true;
-        this.force.up = true;
-        break;
-      case 4:
-        this.force.right = true;
-        break;
-      case 5:
-        this.force.right = true;
-        this.force.down = true;
-        break;
-      case 6:
-        this.force.down = true;
-        break;
-      case 7:
-        this.force.left = true;
-        this.force.down = true;
-        break;
-    }
+    let angle = Math.random()*2*Math.PI;
+    this.force[0] = Math.cos(angle);
+    this.force[1] = Math.sin(angle);
   }
 
 
@@ -345,67 +331,38 @@ class Blob {
   // This function checks if the arrow keys are pressed and accelerates blob in one of 8 directions
   // by the constant speedUp
   accelerate() {
-    if (this.force.up) {
-      if (this.force.left) {
-        //up and left
-        this.velocity[1] += speedUp*diagonal;
-        this.velocity[0] -= speedUp*diagonal;
-      } else if (this.force.right) {
-        // up and right
-        this.velocity[1] += speedUp*diagonal;
-        this.velocity[0] += speedUp*diagonal;
-      } else {
-        // straight up
-        this.velocity[1] += speedUp;
-      }
-    } else if (this.force.down) {
-      if (this.force.left) {
-        // down and left
-        this.velocity[1] -= speedUp*diagonal;
-        this.velocity[0] -= speedUp*diagonal;
-      } else if (this.force.right) {
-        // down and right
-        this.velocity[1] -= speedUp*diagonal;
-        this.velocity[0] += speedUp*diagonal;
-      } else {
-        // straight down
-        this.velocity[1] -= speedUp;
-      }
-    } else if (this.force.right) {
-      // right
-      this.velocity[0] += speedUp;
-    } else if (this.force.left) {
-      // left
-      this.velocity[0] -= speedUp;
-    }
+    this.velocity[0] += speedUp*this.force[0];
+    this.velocity[1] += speedUp*this.force[1];
   }
 
   borderBounce() {
-    this.isMoving = true;
+    // if the blob is off the left hand side of the screen
     if (this.position[0] < -this.radius) {
+      // apply a force to the right
       this.velocity[0] += speedUp;
+      // if it's a non player blob
       if (!this.isPlayer) {
-        this.force.left = false;
-        this.force.right = true;
+        // make horizontal component of it's movement (if any) positive (to the right)
+        this.force[0] = Math.abs(this.force[0]);
       }
+    // same for righthand side
     } else if (this.position[0] > this.radius + windowSize.horizontal) {
-      if (!this.isPlayer) {
-        this.force.right = false;
-        this.force.left = true;
-      }
       this.velocity[0] -= speedUp;
+      if (!this.isPlayer) {
+        this.force[0] = -Math.abs(this.force[0]);
+      }
+    // bottom
     } else if (this.position[1] < -this.radius) {
-      if (!this.isPlayer) {
-        this.force.down = false;
-        this.force.up = true;
-      }
       this.velocity[1] += speedUp;
-    } else if (this.position[1] > this.radius + windowSize.vertical) {
       if (!this.isPlayer) {
-        this.force.up = false;
-        this.force.down = true;
+        this.force[1] = Math.abs(this.force[1]);
       }
+    // top
+    } else if (this.position[1] > this.radius + windowSize.vertical) {
       this.velocity[1] -= speedUp;
+      if (!this.isPlayer) {
+        this.force[1] = -Math.abs(this.force[1]);
+      }
     }
   }
 
