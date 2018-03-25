@@ -30,13 +30,15 @@ window.onload = function() {
   gameWindow = document.getElementById('game-display');
   updateWindowSize();
 
-  initialPos = [windowSize.horizontal/2, windowSize.vertical/2];
-
   // createPlayer();
 
   document.addEventListener('keydown', keyDown, false);
   document.addEventListener('keyup', keyUp, false);
   document.addEventListener('keypress', keyPress, false);
+
+  window.addEventListener('resize', updateWindowSize, false);
+
+  toggleInstructions();
 
   iteration();
 };
@@ -49,6 +51,10 @@ function createPlayer() {
     [0,0],
     true
   );
+}
+
+function toggleInstructions() {
+  document.getElementById('instructions').classList.toggle('hidden');
 }
 
 // this function gets called several times a second and has to loop through everything to make the game real time
@@ -89,6 +95,7 @@ function iteration() {
           // eaten! in this case we keep checking if this blob eats anything else so there is no continue statement
           blobs[i] = blobs[i].consume(player);
           player = null;
+          toggleInstructions();
         }
       }
     }
@@ -151,9 +158,10 @@ function repopulate() {
 }
 
 function updateWindowSize() {
-  var windowDimensions = gameWindow.getBoundingClientRect();
+  let windowDimensions = document.getElementById('game-display').getBoundingClientRect();
   windowSize.horizontal = windowDimensions.width;
   windowSize.vertical   = windowDimensions.height;
+  initialPos = [windowSize.horizontal/2, windowSize.vertical/2];
 }
 
 // When key pressed
@@ -188,6 +196,7 @@ function keyUp(e) {
 function keyPress(e) {
   if ( (!player) && (e.keyCode === 32) ) {
     createPlayer();
+    toggleInstructions();
   } 
 }
 

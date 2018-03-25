@@ -15,11 +15,26 @@ html, body {
   padding: none;
 }
 
+#instructions {
+  align-items: center;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  height: 100%;
+  z-index: 100;
+  transition: all 5s;
+  background: none;
+  color: white;
+}
+
+.hidden {
+  opacity: 0;
+}
+
 .blob {
   border-radius: 50%;
   background: grey;
   position: absolute;
-  z-index: 100;
   display: block;
 }
 
