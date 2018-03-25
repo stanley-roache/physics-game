@@ -354,8 +354,9 @@ class Blob {
       if (!this.isPlayer) {
         this.force[0] = -Math.abs(this.force[0]);
       }
+    } 
     // bottom
-    } else if (this.position[1] < -this.radius) {
+    if (this.position[1] < -this.radius) {
       this.velocity[1] += speedUp;
       if (!this.isPlayer) {
         this.force[1] = Math.abs(this.force[1]);
