@@ -100,8 +100,6 @@ function iteration() {
       }
     }
     
-
-
     // blob eats other blobs
     for (var j = i + 1; j < blobs.length; j++) {
       // skip null blobs
@@ -143,9 +141,10 @@ function repopulate() {
     } else {
       entryPoint = [windowSize.horizontal*(x-3),0];
     }
-    // create the new blob
+    // determines the range of new blob sizes
     let creationRadius = 10;
     if (player) creationRadius = player.getRadius();
+    // create the new blob
     var newblob = new Blob(
       Math.random()*creationRadius*0.8 + creationRadius*0.75,
       entryPoint,
@@ -157,6 +156,7 @@ function repopulate() {
   }
 }
 
+// this function gets called when the window size changes, it is mainly so that the player starting point gets updated
 function updateWindowSize() {
   let windowDimensions = document.getElementById('game-display').getBoundingClientRect();
   windowSize.horizontal = windowDimensions.width;
@@ -194,6 +194,7 @@ function keyUp(e) {
 
 // when key pressed
 function keyPress(e) {
+  // spacebar
   if ( (!player) && (e.keyCode === 32) ) {
     createPlayer();
     toggleInstructions();
@@ -220,11 +221,13 @@ class Blob {
     this.blobDiv.classList.add('blob');
     gameWindow.appendChild(this.blobDiv);
 
+    // sets the div id for player styling
     if (isPlayer) {
       this.blobDiv.id = 'player';
     }
   }
 
+  // I think these two are redundant
   getForce() {
     return this.force;
   }
@@ -232,6 +235,7 @@ class Blob {
     this.force = force;
   }
 
+  // based on the current state of arrow keys, set the force of the player
   updatePlayerForce() {
     if (keyState.up) {
       if (keyState.left) {
@@ -266,10 +270,13 @@ class Blob {
     }
   }
 
+  // this function creates the random blob movement
   blobMovement() {
+    // if the blob is moving it has a chance of changing direction
     if (this.moving && Math.random() > 0.95) {
       this.newRandomDirection();
     }
+    // it also has a chance to start or stop moving
     if (Math.random() > 0.993) {
       this.toggleMoving();
     }
@@ -304,15 +311,13 @@ class Blob {
     this.position[1] += this.velocity[1];
   }
 
-  // This function decellerates the blob proportional to it's current velocity and its radius
+  // This function decellerates the as a function of its radius and velocity
   viscosity() {
-    // this.velocity[0] *= (1-drag*Math.pow(this.radius,2));
-    // this.velocity[1] *= (1-drag*Math.pow(this.radius,2));
     this.velocity[0] *= (1-drag*Math.sqrt(this.radius)*Math.pow(this.velocity[0],2));
     this.velocity[1] *= (1-drag*Math.sqrt(this.radius)*Math.pow(this.velocity[1],2));
   }
 
-  // gradually shrinks blob
+  // gradually shrinks blob as long as it is a bove a minimum size
   hunger() {
     if (this.radius > minSize) {
       this.radius *= (1-appetite);
@@ -323,13 +328,13 @@ class Blob {
     return this.radius;
   }
 
-  // This function checks if the arrow keys are pressed and accelerates blob in one of 8 directions
-  // by the constant speedUp
+  // accelerate the blob by its force
   accelerate() {
     this.velocity[0] += speedUp*this.force[0];
     this.velocity[1] += speedUp*this.force[1];
   }
 
+  // this function handles what happens when a blob nears the edge of screen
   borderBounce() {
     // if the blob is off the left hand side of the screen
     if (this.position[0] < -this.radius) {
@@ -362,6 +367,7 @@ class Blob {
   }
 
   // When a blob leaves the screen, teleport it to the other side.
+  // this is not currently active
   teleport() {
     // out left hand side
     this.position[0] = ((this.position[0] + windowSize.horizontal) % (windowSize.horizontal));
@@ -387,7 +393,7 @@ class Blob {
     return (this.radius > other.radius);
   }
 
-  // this gets called when blobs contact each other and the bigger one eats the smaller one
+  // given two blobs, this function returns a single blob such that mass, centre of mass and momentum are conserved
   consume(other) {
     // relative mass
     var weighting = Math.pow(other.radius,3) / (Math.pow(this.radius,3)+Math.pow(other.radius,3)); 
