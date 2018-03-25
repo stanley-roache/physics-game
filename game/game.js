@@ -263,10 +263,6 @@ class Blob {
     }
     if (Math.random() > 0.993) {
       this.toggleMoving();
-      if (this.moving) {
-        this.newRandomDirection();
-        return;
-      }
     }
   }
 
@@ -274,16 +270,6 @@ class Blob {
     let angle = Math.random()*2*Math.PI;
     this.force[0] = Math.cos(angle);
     this.force[1] = Math.sin(angle);
-  }
-
-
-  // some of these moving functions might be unnecessary
-  isMoving() {
-    return this.moving;
-  }
-
-  setMoving(moving) {
-    this.moving = moving;
   }
 
   toggleMoving() {
