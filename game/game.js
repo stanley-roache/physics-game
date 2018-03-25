@@ -284,8 +284,9 @@ class Blob {
 
   newRandomDirection() {
     let angle = Math.random()*2*Math.PI;
-    this.force[0] = Math.cos(angle);
-    this.force[1] = Math.sin(angle);
+    let power = Math.random();
+    this.force[0] = Math.cos(angle)*power;
+    this.force[1] = Math.sin(angle)*power;
   }
 
   toggleMoving() {
@@ -313,8 +314,10 @@ class Blob {
 
   // This function decellerates the as a function of its radius and velocity
   viscosity() {
-    this.velocity[0] *= (1-drag*Math.sqrt(this.radius)*Math.pow(this.velocity[0],2));
-    this.velocity[1] *= (1-drag*Math.sqrt(this.radius)*Math.pow(this.velocity[1],2));
+    // this.velocity[0] *= (1-drag*Math.sqrt(this.radius)*Math.pow(this.velocity[0],2));
+    // this.velocity[1] *= (1-drag*Math.sqrt(this.radius)*Math.pow(this.velocity[1],2));
+    this.velocity[0] *= (1-drag*Math.sqrt(this.radius)*Math.abs(this.velocity[0]));
+    this.velocity[1] *= (1-drag*Math.sqrt(this.radius)*Math.abs(this.velocity[1]));
   }
 
   // gradually shrinks blob as long as it is a bove a minimum size
