@@ -7,19 +7,17 @@ var windowSize = {
   vertical: 0
 }
 
-
-var initialSize = 10,
+var player,
+    initialSize = 10,
     initialPos = [50,50],
     initialSpeed = [0,0];
-var player;
-
 
 const speedUp = 0.5,
       diagonal = 1.0/Math.sqrt(2),
-      maxPop = 15;
-      // maxMass = ?;
-      drag = 0.004;
-      appetite = 0.0001;
+      maxPop = 10,
+      // maxMass = ?,
+      drag = 0.004,
+      appetite = 0.0005,
       minSize = 10;
 
 window.onload = function() {
@@ -28,10 +26,11 @@ window.onload = function() {
 
   initialPos = [windowSize.horizontal/2, windowSize.vertical/2];
 
-  createPlayer();
+  // createPlayer();
 
   document.addEventListener('keydown', keyDown, false);
   document.addEventListener('keyup', keyUp, false);
+  document.addEventListener('keypress', keyPress, false);
 
   iteration();
 };
@@ -39,8 +38,9 @@ window.onload = function() {
 function createPlayer() {
   player = new Blob(
     initialSize,
-    initialPos,
-    initialSpeed,
+    // the slice makes sure a copy of the array is being passed, otherwise location and speed persist through death
+    initialPos.slice(),
+    initialSpeed.slice(),
     true
   );
 }
@@ -50,7 +50,10 @@ function iteration() {
   // add new blobs
   repopulate();
 
-  player.update();
+  // player movement
+  if (player) {
+    player.update();
+  }
 
   // Each time the array is iterated through a new array is created,
   // This is because when I tried to use array.filter the resultant array was still the same length
@@ -63,22 +66,27 @@ function iteration() {
     blobs[i].blobMovement();
     blobs[i].update();
 
-    // check if the player is touching it
-    if (Blob.getDistance(player,blobs[i],false) < 0) {
-      if (player.biggerThan(blobs[i])) {
-        // combine blobs, create new player blob and carry over force
-        var currentForce = player.getForce();
-        player = player.consume(blobs[i]);
-        player.setForce(currentForce);
-        // player.updateDiv();
+    if (player) {
+      // check if the player is touching it
+      if (Blob.getDistance(player,blobs[i],false) < 0) {
+        if (player.biggerThan(blobs[i])) {
+          // combine blobs, create new player blob and carry over force
+          var currentForce = player.getForce();
+          player = player.consume(blobs[i]);
+          player.setForce(currentForce);
+          // player.updateDiv();
 
-        blobs[i] = null;
-      } else {
-        // eaten!
-        blobs[i] = blobs[i].consume(player);
+          blobs[i] = null;
+          //  in this case the blob is now null so we want to skip to the next blob in the array
+          continue;
+        } else {
+          // eaten! in this case we keep checking if this blob eats anything else so there is no continue statement
+          blobs[i] = blobs[i].consume(player);
+          player = null;
+        }
       }
-      continue;
     }
+    
 
 
     // blob eats other blobs
@@ -111,8 +119,8 @@ function repopulate() {
   // adds new blobs randomly as long as the max populatoin isn't reached
   if (blobs.length < maxPop && Math.random() > 0.99) {
     // This bit randomly assigns a point of entry along the border of the play area
-    var entryPoint
-    var x = Math.random()*4;
+    let entryPoint;
+    let x = Math.random()*4;
     if (x < 1) {
       entryPoint = [0,windowSize.vertical*x];
     } else if (x < 2) {
@@ -123,8 +131,10 @@ function repopulate() {
       entryPoint = [windowSize.horizontal*(x-3),0];
     }
     // create the new blob
+    let creationRadius = 10;
+    if (player) creationRadius = player.getRadius();
     var newblob = new Blob(
-      Math.random() * player.getRadius()*0.8 + player.getRadius()*0.75,
+      Math.random()*creationRadius*0.8 + creationRadius*0.75,
       entryPoint,
       [Math.random()*4 - 2,Math.random()*4 - 2],
       false
@@ -142,6 +152,7 @@ function updateWindowSize() {
 
 // When key pressed
 function keyDown(e) {
+  if (player) {
     if (e.keyCode === 39) {
       player.setRight(true);
     } else if (e.keyCode === 37) {
@@ -152,10 +163,12 @@ function keyDown(e) {
     } else if (e.keyCode === 40) {
       player.setDown(true);
     }
+  }
 }
 
 //  When key released
 function keyUp(e) {
+  if (player) {
     if (e.keyCode === 39) {
       player.setRight(false);
     } else if (e.keyCode === 37) {
@@ -166,6 +179,14 @@ function keyUp(e) {
     } else if (e.keyCode === 40) {
       player.setDown(false);
     }
+  }
+}
+
+// when key pressed
+function keyPress(e) {
+  if ( (!player) && (e.keyCode === 32) ) {
+    createPlayer();
+  } 
 }
 
 
