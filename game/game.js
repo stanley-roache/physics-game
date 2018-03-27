@@ -26,6 +26,8 @@ const speedUp = 0.5,
       appetite = 0.0005,
       minSize = 10;
 
+var sounds = [new Audio("sounds/bubble_pop.mp3")];
+
 window.onload = function() {
   gameWindow = document.getElementById('game-display');
   updateWindowSize();
@@ -199,6 +201,17 @@ function keyPress(e) {
     createPlayer();
     toggleInstructions();
   } 
+}
+
+function playSound() {
+  let pos = 0;
+  while(sounds[pos].playing) {
+      pos++;
+      if( pos >= snd.length) {
+          sounds.push(new Audio("sounds/bubble_pop.mp3"));
+      }
+  }
+  sounds[pos].play();
 }
 
 
@@ -418,6 +431,8 @@ class Blob {
     // removes old divs from html
     other.deleteDiv();
     this.deleteDiv();
+
+    playSound();
 
     // returns new Blob
     return new Blob(
