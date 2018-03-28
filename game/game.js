@@ -148,7 +148,7 @@ function repopulate() {
     if (player) creationRadius = player.getRadius();
     // create the new blob
     var newblob = new Blob(
-      Math.random()*creationRadius*0.8 + creationRadius*0.75,
+      Math.random()*creationRadius + creationRadius*0.5,
       entryPoint,
       [Math.random()*4 - 2,Math.random()*4 - 2],
       false
