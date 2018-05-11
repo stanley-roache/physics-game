@@ -1,11 +1,11 @@
-var blobs = [];
-var t;
-var fps = 50;
-var gameWindow;
-var windowSize = {
-  horizontal: 0,
-  vertical: 0
-}
+var blobs = [],
+    t,
+    fps = 50,
+    gameWindow,
+    windowSize = {
+      horizontal: 0,
+      vertical: 0
+    };
 
 var keyState = {
   left: false,
