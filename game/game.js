@@ -94,7 +94,7 @@ function iteration() {
           //  in this case the blob is now null so we want to skip to the next blob in the array
           continue;
         } else {
-          // eaten! in this case we keep checking if this blob eats anything else so there is no continue statement
+          // eaten! in this case we keep updating the other blobs so there is no continue statement
           blobs[i] = blobs[i].consume(player);
           player = null;
           toggleInstructions();
@@ -108,14 +108,9 @@ function iteration() {
       if (!blobs[j]) continue;
       // are they touching
       if (Blob.getDistance(blobs[i],blobs[j],false) < 0) {
-        // is the current bigger or smaller
-        if (blobs[i].biggerThan(blobs[j])) {
-          blobs[i] = blobs[i].consume(blobs[j]);
-          blobs[j] = null;
-        } else {
-          blobs[i] = blobs[j].consume(blobs[i]);
-          blobs[j] = null;
-        }
+        // bigger eats smaller
+        (blobs[i].biggerThan(blobs[j])) ? blobs[i] = blobs[i].consume(blobs[j]) : blobs[i] = blobs[j].consume(blobs[i]);
+        blobs[j] = null;
       }
     }
     // make sure the remaining blob gets carried to the next array
