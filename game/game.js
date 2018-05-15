@@ -111,7 +111,7 @@ function iteration() {
         // bigger eats smaller
         (blobs[i].biggerThan(blobs[j])) ? blobs[i] = blobs[i].consume(blobs[j]) : blobs[i] = blobs[j].consume(blobs[i]);
         blobs[j] = null;
-      } else if 
+      }
     }
     // make sure the remaining blob gets carried to the next array
     newBlobs.push(blobs[i]);
@@ -388,7 +388,7 @@ class Blob {
   update() {
     this.move();
     this.viscosity();
-    this.hunger();
+    // this.hunger();
     this.accelerate();
     // this.teleport();
     this.borderBounce();
