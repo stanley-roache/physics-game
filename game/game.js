@@ -102,7 +102,7 @@ function iteration() {
       }
     }
     
-    // blob eats other blobs
+    // This loop runs for every pair of blobs
     for (var j = i + 1; j < blobs.length; j++) {
       // skip null blobs
       if (!blobs[j]) continue;
@@ -111,7 +111,7 @@ function iteration() {
         // bigger eats smaller
         (blobs[i].biggerThan(blobs[j])) ? blobs[i] = blobs[i].consume(blobs[j]) : blobs[i] = blobs[j].consume(blobs[i]);
         blobs[j] = null;
-      }
+      } else if 
     }
     // make sure the remaining blob gets carried to the next array
     newBlobs.push(blobs[i]);
@@ -379,9 +379,7 @@ class Blob {
   }
 
   // When a blob leaves the screen, teleport it to the other side.
-  // this is not currently active
   teleport() {
-    // out left hand side
     this.position[0] = ((this.position[0] + windowSize.horizontal) % (windowSize.horizontal));
     this.position[1] = ((this.position[1] + windowSize.vertical) % (windowSize.vertical));
   }

@@ -36,8 +36,10 @@ html, body {
   background: grey;
   position: absolute;
   display: block;
+  box-shadow: 0px 0px 10px 5px grey;
 }
 
 #player {
   background: blue;
+  box-shadow: 0px 0px 10px 5px blue;
 }
