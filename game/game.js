@@ -16,7 +16,8 @@ var keyState = {
 
 var player,
     initialSize = 10,
-    initialPos = [50,50];
+    initialPos = [50,50],
+    viewDistance = 200;
 
 const speedUp = 0.5,
       diagonal = 1.0/Math.sqrt(2),
@@ -81,8 +82,9 @@ function iteration() {
     blobs[i].update();
 
     if (player) {
+      let distance = Blob.getDistance(player,blobs[i],false);
       // check if the player is touching it
-      if (Blob.getDistance(player,blobs[i],false) < 0) {
+      if (distance < 0) {
         if (player.biggerThan(blobs[i])) {
           // combine blobs, create new player blob and carry over force
           var currentForce = player.getForce();
@@ -96,9 +98,10 @@ function iteration() {
         } else {
           // eaten! in this case we keep updating the other blobs so there is no continue statement
           blobs[i] = blobs[i].consume(player);
-          player = null;
-          toggleInstructions();
+          playerDeath();
         }
+      } else {
+        blobs[i].setOpacity(Math.max(1-(distance/viewDistance), 0));
       }
     }
     
@@ -121,6 +124,18 @@ function iteration() {
   blobs = newBlobs;
 
   t=setTimeout("iteration()",1000/fps);
+}
+
+function playerDeath() {
+  player = null;
+  toggleInstructions();
+  revealAll();
+}
+
+function revealAll() {
+  for (let i = 0; i < blobs.length; i++) {
+    blobs[i].setOpacity(1);
+  }
 }
 
 function repopulate() {
@@ -393,6 +408,9 @@ class Blob {
     // this.teleport();
     this.borderBounce();
     this.updateDiv();
+    if (this.isPlayer) {
+      viewDistance = player.radius*10;
+    }
   }
 
   deleteDiv() {
@@ -434,6 +452,10 @@ class Blob {
       newVelocity,
       (this === player)
     );
+  }
+
+  setOpacity(opac) {
+    this.blobDiv.style.opacity = opac;
   }
 
   // This function checks how far apart two blobs are, either their surfaces or their centres
