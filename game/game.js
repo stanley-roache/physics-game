@@ -103,6 +103,7 @@ function iteration() {
         }
       } else {
         blobs[i].setOpacity(Math.max(1-(distance/viewDistance), 0));
+        if (keyState.gravity) Blob.applyGravityBetween(player,blobs[i]);
       }
     }
     
@@ -115,6 +116,8 @@ function iteration() {
         // bigger eats smaller
         (blobs[i].biggerThan(blobs[j])) ? blobs[i] = blobs[i].consume(blobs[j]) : blobs[i] = blobs[j].consume(blobs[i]);
         blobs[j] = null;
+      } else if (keyState.gravity) {
+        Blob.applyGravityBetween(blobs[i],blobs[j]);
       }
     }
     // make sure the remaining blob gets carried to the next array
@@ -244,13 +247,13 @@ function playSound() {
 // This is the class for an individual blob
 
 class Blob {
-  constructor (radius, position, velocity, isPlayer) {
+  constructor (radius, position, velocity, isPlayer, gravity = [0,0]) {
     this.radius = radius;
     this.mass = Math.pow(radius,3);
     this.position = position;
     this.velocity = velocity;
     this.force = [0,0];
-    this.gravity = [0,0];
+    this.gravity = gravity;
 
     // blob only
     this.moving = false;
@@ -428,9 +431,8 @@ class Blob {
     // this.teleport();
     this.borderBounce();
     this.updateDiv();
-    if (this.isPlayer) {
-      viewDistance = player.radius*10;
-    }
+    if (this.isPlayer) viewDistance = player.radius*10;
+    if (keyState.gravity) this.gravity = [0,0];
   }
 
   deleteDiv() {
@@ -495,9 +497,9 @@ class Blob {
     let gravityTermHorizontal = magnitude*(a.position[0] - b.position[0])/distance,
         gravityTermVertical = magnitude*(a.position[1] - b.position[1])/distance;
 
-    a.gravity[0] += gravityTermHorizontal;
-    a.gravity[1] += gravityTermVertical;
-    b.gravity[0] -= gravityTermHorizontal
-    b.gravity[1] -= gravityTermVertical;
+    a.gravity[0] -= gravityTermHorizontal;
+    a.gravity[1] -= gravityTermVertical;
+    b.gravity[0] += gravityTermHorizontal
+    b.gravity[1] += gravityTermVertical;
   }
 }
