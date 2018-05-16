@@ -372,8 +372,8 @@ class Blob {
 
   // accelerate the blob by its force
   accelerate() {
-    this.velocity[0] += speedUp*this.force[0];
-    this.velocity[1] += speedUp*this.force[1];
+    this.velocity[0] += speedUp*(this.force[0]*this.mass + this.gravity[0])/this.mass;
+    this.velocity[1] += speedUp*(this.force[1]*this.mass + this.gravity[1])/this.mass;
   }
 
   // this function handles what happens when a blob nears the edge of screen
