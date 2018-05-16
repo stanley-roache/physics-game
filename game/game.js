@@ -158,7 +158,7 @@ function repopulate() {
     if (player) creationRadius = player.getRadius();
     // create the new blob
     var newblob = new Blob(
-      Math.random()*creationRadius + creationRadius*0.5,
+      getCreationRadius(),
       entryPoint,
       [Math.random()*4 - 2,Math.random()*4 - 2],
       false
@@ -166,6 +166,11 @@ function repopulate() {
     // put it in with its mates
     blobs.push(newblob);
   }
+}
+
+// This function defines the distribution of sizes of new blobs
+function getCreationRadius() {
+  return 0.8*initialSize*Math.pow(5,Math.pow(Math.random(),2));
 }
 
 // this function gets called when the window size changes, it is mainly so that the player starting point gets updated
