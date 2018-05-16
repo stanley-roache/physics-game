@@ -484,12 +484,16 @@ class Blob {
     else return (centre - (a.radius + b.radius)); 
   }
 
-  static applyGravity (a,b) {
+  static applyGravityBetween (a,b) {
     let distance = Blob.getDistance(a,b,true),
-        horizontal = a.position[0] - b.position[0],
-        vertical = a.position[1] - b.position[1];
-    let magnitude = (a.mass*b.mass)/Math.pow(distance,2);
-    a.gravity = [magnitude*horizontal/distance,magnitude*vertical/distance]
-    b.gravity = [-a.gravity[0], -b.gravity[0]];
+        magnitude = (a.mass*b.mass)/Math.pow(distance,2);
+
+    let gravityTermHorizontal = magnitude*(a.position[0] - b.position[0])/distance,
+        gravityTermVertical = magnitude*(a.position[1] - b.position[1])/distance;
+
+    a.gravity[0] += gravityTermHorizontal;
+    a.gravity[1] += gravityTermVertical;
+    b.gravity[0] -= gravityTermHorizontal
+    b.gravity[1] -= gravityTermVertical;
   }
 }
