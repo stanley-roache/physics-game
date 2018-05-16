@@ -246,9 +246,11 @@ function playSound() {
 class Blob {
   constructor (radius, position, velocity, isPlayer) {
     this.radius = radius;
+    this.mass = Math.pow(radius,3);
     this.position = position;
     this.velocity = velocity;
     this.force = [0,0];
+    this.gravity = [0,0];
 
     // blob only
     this.moving = false;
@@ -483,5 +485,11 @@ class Blob {
   }
 
   static applyGravity (a,b) {
+    let distance = Blob.getDistance(a,b,true),
+        horizontal = a.position[0] - b.position[0],
+        vertical = a.position[1] - b.position[1];
+    let magnitude = (a.mass*b.mass)/Math.pow(distance,2);
+    a.gravity = [magnitude*horizontal/distance,magnitude*vertical/distance]
+    b.gravity = [-a.gravity[0], -b.gravity[0]];
   }
 }
