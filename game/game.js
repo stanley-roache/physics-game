@@ -11,7 +11,8 @@ var keyState = {
   left: false,
   right: false,
   down: false,
-  up: false
+  up: false,
+  gravity: false,
 }
 
 var player,
@@ -193,6 +194,8 @@ function keyDown(e) {
     keyState.up = true;
   } else if (e.keyCode === 40) {
     keyState.down = true;
+  } else if (e.keyCode === 71) {
+    keyState.gravity = true;
   }
   if (player) player.updatePlayerForce();
 }
@@ -207,6 +210,8 @@ function keyUp(e) {
     keyState.up = false;
   } else if (e.keyCode === 40) {
     keyState.down = false;
+  } else if (e.keyCode === 71) {
+    keyState.gravity = false;
   }
   if (player) player.updatePlayerForce();
 }
@@ -214,9 +219,11 @@ function keyUp(e) {
 // when key pressed
 function keyPress(e) {
   // spacebar
-  if ( (!player) && (e.keyCode === 32) ) {
-    createPlayer();
-    toggleInstructions();
+  if (e.keyCode === 32) {
+    if (!player) {
+      createPlayer();
+      toggleInstructions();
+    }
   } 
 }
 
@@ -473,5 +480,8 @@ class Blob {
     );
     if (fromCentre) return centre;
     else return (centre - (a.radius + b.radius)); 
+  }
+
+  static applyGravity (a,b) {
   }
 }
