@@ -170,6 +170,8 @@ function repopulate() {
 
 // This function defines the distribution of sizes of new blobs
 function getCreationRadius() {
+  // 0.8*initialSize means the smallest created is just under player starting size,
+  // 5^(random^2) means the biggest size possible is 5 times the start size and the distribution is highly weighted towards smaller sizes
   return 0.8*initialSize*Math.pow(5,Math.pow(Math.random(),2));
 }
 
