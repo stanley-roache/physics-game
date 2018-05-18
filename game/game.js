@@ -154,17 +154,18 @@ function revealAll() {
 
 function repopulate() {
   // adds new blobs randomly as long as the max populatoin isn't reached
-  if (blobs.length < maxPop && Math.random() > 0.99) {
-    // create the new blob
-    var newblob = new Blob(
-      getCreationRadius(),
-      getRandomBorderPosition(),
-      getRandomStartingVelocity(),
-      false
-    );
-    // put it in with its mates
-    blobs.push(newblob);
-  }
+  if (blobs.length < maxPop && Math.random() > 0.99) addBlob();
+}
+
+function addBlob(radius = getCreationRadius(), pos = getRandomBorderPosition(), vel = getRandomStartingVelocity()) {
+  let newblob = new Blob(
+    radius,
+    pos,
+    vel,
+    false
+  );
+  // put it in with its mates
+  blobs.push(newblob);
 }
 
 function getRandomBorderPosition() {
