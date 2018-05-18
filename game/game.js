@@ -33,6 +33,7 @@ const speedUp = 0.5,
       // maxMass = ?,
       drag = 0.004,
       appetite = 0.0005,
+      G = 0.1,
       minSize = 10;
 
 var sounds = [new Audio("sounds/bubble_pop.mp3")];
@@ -529,7 +530,7 @@ class Blob {
     // gravity and repulsion interaction
     if (gameState.gravity) {
       let distance = Blob.getDistance(a,b,true),
-          magnitude = (a.mass*b.mass)/Math.pow(distance,2);
+          magnitude = G*(a.mass*b.mass)/Math.pow(distance,2);
 
       let gravityTermHorizontal = magnitude*(a.position[0] - b.position[0])/distance,
           gravityTermVertical = magnitude*(a.position[1] - b.position[1])/distance;
