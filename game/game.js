@@ -536,7 +536,7 @@ class Blob {
   }
 
   biggerThan(other) {
-    return (this.radius > other.radius);
+    return (this.radius >= other.radius);
   }
 
   // given two blobs, this function returns a single blob such that mass, centre of mass and momentum are conserved
