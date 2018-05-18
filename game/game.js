@@ -14,9 +14,12 @@ var keyState = {
   up: false,
 }
 
-var activeForces = {
+var gameState = {
   gravity: false,
   repulsion: false,
+  drag: true,
+  borderBounce: true,
+  borderTeleport: false,
 }
 
 var player,
@@ -37,8 +40,6 @@ var sounds = [new Audio("sounds/bubble_pop.mp3")];
 window.onload = function() {
   gameWindow = document.getElementById('game-display');
   updateWindowSize();
-
-  // createPlayer();
 
   document.addEventListener('keydown', keyDown, false);
   document.addEventListener('keyup', keyUp, false);
@@ -88,7 +89,7 @@ function iteration() {
 
     if (player) {
       let distance = Blob.getDistance(player,blobs[i],false);
-      // check if the player is touching it
+      // if touching player
       if (distance < 0) {
         if (player.biggerThan(blobs[i])) {
           // combine blobs, create new player blob and carry over force
@@ -105,6 +106,7 @@ function iteration() {
           blobs[i] = blobs[i].consume(player);
           playerDeath();
         }
+        // if not touching player
       } else {
         blobs[i].setOpacity(Math.max(1-(distance/viewDistance), 0));
         Blob.pairwiseInteraction(player,blobs[i]);
@@ -161,9 +163,6 @@ function repopulate() {
     } else {
       entryPoint = [windowSize.horizontal*(x-3),0];
     }
-    // determines the range of new blob sizes
-    let creationRadius = 10;
-    if (player) creationRadius = player.getRadius();
     // create the new blob
     var newblob = new Blob(
       getCreationRadius(),
@@ -201,8 +200,18 @@ function keyDown(e) {
     keyState.up = true;
   } else if (e.keyCode === 40) {
     keyState.down = true;
+    // g
   } else if (e.keyCode === 71) {
-    activeForces.gravity = true;
+    gameState.gravity = true;
+    // f
+  } else if (e.keyCode === 70) {
+    gameState.drag = false;
+    // t
+  } else if (e.keyCode === 84) {
+    gameState.borderBounce = false;
+    gameState.borderTeleport = true;
+  } else if (e.keyCode === 66) {
+    gameState.borderBounce = false;
   }
   if (player) player.updatePlayerForce();
 }
@@ -217,8 +226,17 @@ function keyUp(e) {
     keyState.up = false;
   } else if (e.keyCode === 40) {
     keyState.down = false;
+    // g
   } else if (e.keyCode === 71) {
-    activeForces.gravity = false;
+    gameState.gravity = false;
+    // f
+  } else if (e.keyCode === 70) {
+    gameState.drag = true;
+  } else if (e.keyCode === 84) {
+    gameState.borderBounce = true;
+    gameState.borderTeleport = false;
+  } else if (e.keyCode === 66) {
+    gameState.borderBounce = true;
   }
   if (player) player.updatePlayerForce();
 }
@@ -251,12 +269,13 @@ function playSound() {
 // This is the class for an individual blob
 
 class Blob {
-  constructor (radius, position, velocity, isPlayer, gravity = [0,0]) {
+  constructor (radius, position, velocity = [0,0], isPlayer = false, gravity = [0,0]) {
     this.radius = radius;
     this.mass = Math.pow(radius,3);
     this.position = position;
     this.velocity = velocity;
     this.force = [0,0];
+    this.isPlayer = isPlayer;
     this.gravity = gravity;
 
     // blob only
@@ -379,9 +398,11 @@ class Blob {
 
   // accelerate the blob by its force
   accelerate() {
-    this.velocity[0] += speedUp*this.force[0];
-    this.velocity[1] += speedUp*this.force[1];
-    if (activeForces.gravity) {
+    if (gameState.drag) {
+      this.velocity[0] += speedUp*this.force[0];
+      this.velocity[1] += speedUp*this.force[1];
+    }
+    if (gameState.gravity) {
       this.velocity[0] += speedUp*this.gravity[0]/this.mass;
       this.velocity[1] += speedUp*this.gravity[1]/this.mass;
     }
@@ -429,14 +450,14 @@ class Blob {
   // this master call contains all the things that need to happen to each blob each iteration
   update() {
     this.move();
-    this.viscosity();
+    if (gameState.drag) this.viscosity();
     // this.hunger();
     this.accelerate();
-    // this.teleport();
-    this.borderBounce();
+    if (gameState.borderTeleport) this.teleport();
+    if (gameState.borderBounce) this.borderBounce();
     this.updateDiv();
-    if (this.isPlayer) viewDistance = player.radius*10;
-    if (activeForces.gravity) this.gravity = [0,0];
+    if (this.isPlayer) viewDistance = initialSize*10 + player.radius*5;
+    if (gameState.gravity) this.gravity = [0,0];
   }
 
   deleteDiv() {
@@ -494,8 +515,9 @@ class Blob {
     else return (centre - (a.radius + b.radius)); 
   }
 
+  // deal with all pairwise interactions between blobs
   static pairwiseInteraction (a,b) {
-    if (activeForces.gravity) {
+    if (gameState.gravity) {
       let distance = Blob.getDistance(a,b,true),
           magnitude = (a.mass*b.mass)/Math.pow(distance,2);
 
