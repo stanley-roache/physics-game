@@ -33,7 +33,7 @@ const speedUp = 0.5,
       // maxMass = ?,
       drag = 0.004,
       appetite = 0.0005,
-      G = 0.1,
+      G = 0.5,
       minSize = 10;
 
 var sounds = [new Audio("sounds/bubble_pop.mp3")];
@@ -246,6 +246,9 @@ function keyUp(e) {
     gameState.borderTeleport = false;
   } else if (e.keyCode === 66) {
     gameState.borderBounce = true;
+  } else if (e.keyCode === 90) {
+    zeroTotalMomentum();
+    zeroPosition();
   }
   if (player) player.updatePlayerForce();
 }
@@ -270,6 +273,48 @@ function playSound() {
       }
   }
   sounds[pos].play();
+}
+
+// shifts the velocity of all blobs to zero total momentum while conserving relationships
+function zeroTotalMomentum() {
+  let totalMomentum = [0,0],
+      totalMass = 0,
+      allBlobs = (player) ? blobs.concat([player]): blobs;
+  // sum momentum and mass
+  for (let i = 0; i < allBlobs.length; i++) {
+    let currentMass = allBlobs[i].getMass(),
+        currentVelocity = allBlobs[i].getVel();
+    totalMass += currentMass;
+    totalMomentum[0] += currentVelocity[0]*currentMass;
+    totalMomentum[1] += currentVelocity[1]*currentMass;
+  }
+  let velocityShift = [-totalMomentum[0]/totalMass,-totalMomentum[1]/totalMass];
+
+  // adjust all blob velocities
+  for (let i = 0; i < allBlobs.length; i++) {
+    allBlobs[i].adjustVelocityBy(velocityShift);
+  }
+}
+
+// shifts the position of all blobs to zero total position while conserving relationships
+function zeroPosition(){
+  let totalCOM = [0,0],
+      totalMass = 0,
+      allBlobs = (player) ? blobs.concat([player]) : blobs;
+  // sum COM and mass
+  for (let i = 0; i < allBlobs.length; i++) {
+    let currentMass = allBlobs[i].getMass(),
+        currentPosition = allBlobs[i].getPos();
+    totalMass += currentMass;
+    totalCOM[0] += currentPosition[0]*currentMass;
+    totalCOM[1] += currentPosition[1]*currentMass;
+  }
+  let positionShift = [initialPos[0] - totalCOM[0]/totalMass,initialPos[1] - totalCOM[1]/totalMass];
+
+  // adjust all blob positions
+  for (let i = 0; i < allBlobs.length; i++) {
+    allBlobs[i].adjustPositionBy(positionShift);
+  }
 }
 
 
@@ -299,14 +344,6 @@ class Blob {
     if (isPlayer) {
       this.blobDiv.id = 'player';
     }
-  }
-
-  // I think these two are redundant
-  getForce() {
-    return this.force;
-  }
-  setForce(force) {
-    this.force = force;
   }
 
   // based on the current state of arrow keys, set the force of the player
@@ -404,6 +441,29 @@ class Blob {
   getRadius() {
     return this.radius;
   }
+  getMass() {
+    return this.mass;
+  }
+  getVel() {
+    return this.velocity;
+  }
+  getPos() {
+    return this.position;
+  }
+  getForce() {
+    return this.force;
+  }
+  setForce(force) {
+    this.force = force;
+  }
+  adjustVelocityBy(adjustment) {
+    this.velocity[0] += adjustment[0];
+    this.velocity[1] += adjustment[1];
+  }
+  adjustPositionBy(adjustment) {
+    this.position[0] += adjustment[0];
+    this.position[1] += adjustment[1];
+  }
 
   // accelerate the blob by its force
   accelerate() {
@@ -460,7 +520,6 @@ class Blob {
 
   // this master call contains all the things that need to happen to each blob each iteration
   update() {
-    if (gameState.gravity) this.gravity = [0,0];
     this.move();
     if (gameState.drag) this.viscosity();
     // this.hunger();
@@ -468,6 +527,7 @@ class Blob {
     if (gameState.borderTeleport) this.teleport();
     if (gameState.borderBounce) this.borderBounce();
     this.updateDiv();
+    if (gameState.gravity) this.gravity = [0,0];
   }
 
   deleteDiv() {
@@ -481,20 +541,20 @@ class Blob {
   // given two blobs, this function returns a single blob such that mass, centre of mass and momentum are conserved
   consume(other) {
     // relative mass
-    var weighting = Math.pow(other.radius,3) / (Math.pow(this.radius,3)+Math.pow(other.radius,3)); 
+    let weighting = Math.pow(other.radius,3) / (Math.pow(this.radius,3)+Math.pow(other.radius,3)); 
     // calculates centre of mass of both blobs
-    var newPosition = [
+    let newPosition = [
       this.position[0] + (other.position[0] - this.position[0]) * weighting,
       this.position[1] + (other.position[1] - this.position[1]) * weighting
     ];
     // calculates valocity based on total momentum
-    var newVelocity = [
+    let newVelocity = [
       this.velocity[0] + (other.velocity[0] - this.velocity[0]) * weighting,
       this.velocity[1] + (other.velocity[1] - this.velocity[1]) * weighting
     ];
 
     // new size that conserves mass|volume
-    var newRadius = Math.pow((Math.pow(this.radius,3)+Math.pow(other.radius,3)), 1/3);
+    let newRadius = Math.pow((Math.pow(this.radius,3)+Math.pow(other.radius,3)), 1/3);
 
     // removes old divs from html
     other.deleteDiv();
@@ -530,7 +590,7 @@ class Blob {
     // gravity and repulsion interaction
     if (gameState.gravity) {
       let distance = Blob.getDistance(a,b,true),
-          magnitude = G*(a.mass*b.mass)/Math.pow(distance,2);
+          magnitude = G*a.mass*b.mass/Math.pow(distance,2);
 
       let gravityTermHorizontal = magnitude*(a.position[0] - b.position[0])/distance,
           gravityTermVertical = magnitude*(a.position[1] - b.position[1])/distance;
