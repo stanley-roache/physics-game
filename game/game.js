@@ -74,6 +74,7 @@ function iteration() {
   // player movement
   if (player) {
     player.update();
+    viewDistance = initialSize*10 + player.radius*5;
   }
 
   // Each time the array is iterated through a new array is created,
@@ -392,7 +393,7 @@ class Blob {
     this.velocity[1] *= (1-drag*Math.sqrt(this.radius)*Math.abs(this.velocity[1]));
   }
 
-  // gradually shrinks blob as long as it is a bove a minimum size
+  // gradually shrinks blob as long as it is above a minimum size
   hunger() {
     if (this.radius > minSize) {
       this.radius *= (1-appetite);
@@ -466,7 +467,6 @@ class Blob {
     if (gameState.borderTeleport) this.teleport();
     if (gameState.borderBounce) this.borderBounce();
     this.updateDiv();
-    if (this.isPlayer) viewDistance = initialSize*10 + player.radius*5;
   }
 
   deleteDiv() {
@@ -492,7 +492,7 @@ class Blob {
       this.velocity[1] + (other.velocity[1] - this.velocity[1]) * weighting
     ];
 
-    // new size
+    // new size that conserves mass|volume
     var newRadius = Math.pow((Math.pow(this.radius,3)+Math.pow(other.radius,3)), 1/3);
 
     // removes old divs from html
@@ -524,8 +524,9 @@ class Blob {
     else return (centre - (a.radius + b.radius)); 
   }
 
-  // deal with all pairwise interactions between blobs
+  // deal with all pairwise interactions between blobs, assumes player will be passed first if at all (player)
   static pairwiseInteraction (a,b) {
+    // gravity and repulsion interaction
     if (gameState.gravity) {
       let distance = Blob.getDistance(a,b,true),
           magnitude = (a.mass*b.mass)/Math.pow(distance,2);
