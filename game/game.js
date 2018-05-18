@@ -251,7 +251,9 @@ function keyUp(e) {
     gameState.borderBounce = true;
   } else if (e.keyCode === 90) {
     zeroTotalMomentumAndPosition();
-  }
+  } else if (e.keyCode === 65) {
+    addBlob();
+  } 
   if (player) player.updatePlayerForce();
 }
 
