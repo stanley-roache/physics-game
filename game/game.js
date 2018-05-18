@@ -75,6 +75,7 @@ function iteration() {
   // player movement
   if (player) {
     player.update();
+    // this updates the range of view of the player
     viewDistance = initialSize*10 + player.radius*5;
   }
 
@@ -86,7 +87,7 @@ function iteration() {
     // it might be null, skip if it is
     if (!blobs[i]) continue;
 
-    blobs[i].blobMovement();
+    blobs[i].blobWander();
     blobs[i].update();
 
     if (player) {
@@ -382,7 +383,7 @@ class Blob {
   }
 
   // this function creates the random blob movement
-  blobMovement() {
+  blobWander() {
     // if the blob is moving it has a chance of changing direction
     if (this.moving && Math.random() > 0.95) {
       this.newRandomDirection();
