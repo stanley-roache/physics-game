@@ -268,7 +268,7 @@ function playSound() {
   let pos = 0;
   while(sounds[pos].playing) {
       pos++;
-      if( pos >= snd.length) {
+      if( pos >= sounds.length) {
           sounds.push(new Audio("sounds/bubble_pop.mp3"));
       }
   }
