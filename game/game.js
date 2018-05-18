@@ -398,10 +398,12 @@ class Blob {
 
   // accelerate the blob by its force
   accelerate() {
+    // this component is the blobs own movement, player or otherwise
     if (gameState.drag) {
       this.velocity[0] += speedUp*this.force[0];
       this.velocity[1] += speedUp*this.force[1];
     }
+    // this is the effect of gravity on the blob
     if (gameState.gravity) {
       this.velocity[0] += speedUp*this.gravity[0]/this.mass;
       this.velocity[1] += speedUp*this.gravity[1]/this.mass;
@@ -449,6 +451,7 @@ class Blob {
 
   // this master call contains all the things that need to happen to each blob each iteration
   update() {
+    if (gameState.gravity) this.gravity = [0,0];
     this.move();
     if (gameState.drag) this.viscosity();
     // this.hunger();
@@ -457,7 +460,6 @@ class Blob {
     if (gameState.borderBounce) this.borderBounce();
     this.updateDiv();
     if (this.isPlayer) viewDistance = initialSize*10 + player.radius*5;
-    if (gameState.gravity) this.gravity = [0,0];
   }
 
   deleteDiv() {
