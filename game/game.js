@@ -34,7 +34,8 @@ const speedUp = 0.5,
       drag = 0.004,
       appetite = 0.0005,
       G = 0.5,
-      minSize = 10;
+      minSize = 10,
+      borderElasticity = 0.005;
 
 var sounds = [new Audio("sounds/bubble_pop.mp3")];
 
@@ -456,8 +457,8 @@ class Blob {
     }
     // this is the effect of gravity on the blob
     if (gameState.gravity) {
-      this.velocity[0] += speedUp*this.gravity[0]/this.mass;
-      this.velocity[1] += speedUp*this.gravity[1]/this.mass;
+      this.velocity[0] += this.gravity[0]/this.mass;
+      this.velocity[1] += this.gravity[1]/this.mass;
     }
   }
 
@@ -465,32 +466,18 @@ class Blob {
   borderBounce() {
     // if the blob is off the left hand side of the screen
     if (this.position[0] < -this.radius) {
-      // apply a force to the right
-      this.velocity[0] += speedUp;
-      // if it's a non player blob
-      if (!this.isPlayer) {
-        // make horizontal component of it's movement (if any) positive (to the right)
-        this.force[0] = Math.abs(this.force[0]);
-      }
-    // same for righthand side
+      // apply force proportional to it's distance off screen
+      this.velocity[0] -= borderElasticity*(this.position[0] + this.radius);
+    // and vice versa
     } else if (this.position[0] > this.radius + windowSize.horizontal) {
-      this.velocity[0] -= speedUp;
-      if (!this.isPlayer) {
-        this.force[0] = -Math.abs(this.force[0]);
-      }
-    } 
-    // bottom
+      this.velocity[0] -= borderElasticity*(this.position[0] - this.radius - windowSize.horizontal);
+    }
+
+    // same for vertical
     if (this.position[1] < -this.radius) {
-      this.velocity[1] += speedUp;
-      if (!this.isPlayer) {
-        this.force[1] = Math.abs(this.force[1]);
-      }
-    // top
+      this.velocity[1] -= borderElasticity*(this.position[1] + this.radius);
     } else if (this.position[1] > this.radius + windowSize.vertical) {
-      this.velocity[1] -= speedUp;
-      if (!this.isPlayer) {
-        this.force[1] = -Math.abs(this.force[1]);
-      }
+      this.velocity[1] -= borderElasticity*(this.position[1] - this.radius - windowSize.vertical);
     }
   }
 
