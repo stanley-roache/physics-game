@@ -248,8 +248,7 @@ function keyUp(e) {
   } else if (e.keyCode === 66) {
     gameState.borderBounce = true;
   } else if (e.keyCode === 90) {
-    zeroTotalMomentum();
-    zeroPosition();
+    zeroTotalMomentumAndPosition();
   }
   if (player) player.updatePlayerForce();
 }
@@ -276,50 +275,32 @@ function playSound() {
   sounds[pos].play();
 }
 
-// shifts the velocity of all blobs to zero total momentum while conserving relationships
-function zeroTotalMomentum() {
+// shifts the velocity of all blobs to zero total momentum and centre COM in middle of screen while conserving relationships
+function zeroTotalMomentumAndPosition() {
   let totalMomentum = [0,0],
+      totalCOM = [0,0],
       totalMass = 0,
       allBlobs = (player) ? blobs.concat([player]): blobs;
-  // sum momentum and mass
+  // sum momentum, COM and mass
   for (let i = 0; i < allBlobs.length; i++) {
     let currentMass = allBlobs[i].getMass(),
-        currentVelocity = allBlobs[i].getVel();
+        currentVelocity = allBlobs[i].getVel(),
+        currentPosition = allBlobs[i].getPos();
     totalMass += currentMass;
     totalMomentum[0] += currentVelocity[0]*currentMass;
     totalMomentum[1] += currentVelocity[1]*currentMass;
-  }
-  let velocityShift = [-totalMomentum[0]/totalMass,-totalMomentum[1]/totalMass];
-
-  // adjust all blob velocities
-  for (let i = 0; i < allBlobs.length; i++) {
-    allBlobs[i].adjustVelocityBy(velocityShift);
-  }
-}
-
-// shifts the position of all blobs to zero total position while conserving relationships
-function zeroPosition(){
-  let totalCOM = [0,0],
-      totalMass = 0,
-      allBlobs = (player) ? blobs.concat([player]) : blobs;
-  // sum COM and mass
-  for (let i = 0; i < allBlobs.length; i++) {
-    let currentMass = allBlobs[i].getMass(),
-        currentPosition = allBlobs[i].getPos();
-    totalMass += currentMass;
     totalCOM[0] += currentPosition[0]*currentMass;
     totalCOM[1] += currentPosition[1]*currentMass;
   }
-  let positionShift = [initialPos[0] - totalCOM[0]/totalMass,initialPos[1] - totalCOM[1]/totalMass];
+  let velocityShift = [-totalMomentum[0]/totalMass,-totalMomentum[1]/totalMass],
+      positionShift = [initialPos[0] - totalCOM[0]/totalMass,initialPos[1] - totalCOM[1]/totalMass];
 
-  // adjust all blob positions
+  // adjust all blobs
   for (let i = 0; i < allBlobs.length; i++) {
+    allBlobs[i].adjustVelocityBy(velocityShift);
     allBlobs[i].adjustPositionBy(positionShift);
   }
 }
-
-
-
 
 // This is the class for an individual blob
 
