@@ -151,28 +151,35 @@ function revealAll() {
 function repopulate() {
   // adds new blobs randomly as long as the max populatoin isn't reached
   if (blobs.length < maxPop && Math.random() > 0.99) {
-    // This bit randomly assigns a point of entry along the border of the play area
-    let entryPoint;
-    let x = Math.random()*4;
-    if (x < 1) {
-      entryPoint = [0,windowSize.vertical*x];
-    } else if (x < 2) {
-      entryPoint = [windowSize.horizontal*(x-1),0];
-    } else  if (x < 3) {
-      entryPoint = [windowSize.horizontal,windowSize.vertical*(x-2)];
-    } else {
-      entryPoint = [windowSize.horizontal*(x-3),0];
-    }
     // create the new blob
     var newblob = new Blob(
       getCreationRadius(),
-      entryPoint,
-      [Math.random()*4 - 2,Math.random()*4 - 2],
+      getRandomBorderPosition(),
+      getRandomStartingVelocity(),
       false
     );
     // put it in with its mates
     blobs.push(newblob);
   }
+}
+
+function getRandomBorderPosition() {
+  let entryPoint;
+  let x = Math.random()*4;
+  if (x < 1) {
+    entryPoint = [0,windowSize.vertical*x];
+  } else if (x < 2) {
+    entryPoint = [windowSize.horizontal*(x-1),0];
+  } else  if (x < 3) {
+    entryPoint = [windowSize.horizontal,windowSize.vertical*(x-2)];
+  } else {
+    entryPoint = [windowSize.horizontal*(x-3),0];
+  }
+  return entryPoint;
+}
+
+function getRandomStartingVelocity() {
+  return [Math.random()*4 - 2,Math.random()*4 - 2];
 }
 
 // This function defines the distribution of sizes of new blobs
