@@ -38,6 +38,7 @@ const speedUp = 0.5,
       borderElasticity = 0.005,
       audioDepth = 5;
 
+// this creates an array of audio objects to play the popping sound so that it can be played multiple tiems at once
 var sounds = [],
     soundIndex = 0;
 for (let i = 0; i < audioDepth; i++) {
@@ -86,7 +87,7 @@ function iteration() {
   }
 
   // Each time the array is iterated through a new array is created,
-  // This is because when I tried to use array.filter the resultant array was still the same length
+  // This is because when I tried to use array.filter the resultant array was still the same length and contained nulls
   var newBlobs = [];
 
   for (var i = 0; i < blobs.length; i++) {
@@ -498,6 +499,7 @@ class Blob {
     if (gameState.borderTeleport) this.teleport();
     if (gameState.borderBounce) this.borderBounce();
     this.updateDiv();
+    // since the gravity is recalculated each iteration it needs to be rezeroed each time.
     if (gameState.gravity) this.gravity = [0,0];
   }
 
