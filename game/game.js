@@ -35,9 +35,14 @@ const speedUp = 0.5,
       appetite = 0.0005,
       G = 0.5,
       minSize = 10,
-      borderElasticity = 0.005;
+      borderElasticity = 0.005,
+      audioDepth = 5;
 
-var sounds = [new Audio("sounds/bubble_pop.mp3")];
+var sounds = [],
+    soundIndex = 0;
+for (let i = 0; i < audioDepth; i++) {
+  sounds.push(new Audio("sounds/bubble_pop.mp3"))
+}
 
 window.onload = function() {
   gameWindow = document.getElementById('game-display');
@@ -269,14 +274,8 @@ function keyPress(e) {
 }
 
 function playSound() {
-  let pos = 0;
-  while(sounds[pos].playing) {
-      pos++;
-      if (pos == sounds.length) {
-          sounds.push(new Audio("sounds/bubble_pop.mp3"));
-      }
-  }
-  sounds[pos].play();
+  soundIndex = (soundIndex+1)%audioDepth;
+  sounds[soundIndex].play();
 }
 
 // shifts the velocity of all blobs to zero total momentum and centre COM in middle of screen while conserving relationships
