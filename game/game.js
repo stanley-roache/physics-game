@@ -25,6 +25,7 @@ var gameState = {
 var player,
     initialSize = 10,
     initialPos = [50,50],
+    pairwiseForceStrength = 0,
     viewDistance = 200;
 
 const speedUp = 0.5,
@@ -34,6 +35,7 @@ const speedUp = 0.5,
       drag = 0.004,
       appetite = 0.0005,
       G = 0.5,
+      R = -0.5,
       minSize = 10,
       borderElasticity = 0.005,
       audioDepth = 5;
@@ -221,16 +223,17 @@ function keyDown(e) {
     // g
   } else if (e.keyCode === 71) {
     gameState.gravity = true;
+    gameState.repulsion = false;
+    pairwiseForceStrength = G;
+    // r
+  } else if (e.keyCode === 82) {
+    gameState.gravity = false;
+    gameState.repulsion = true;
+    pairwiseForceStrength = R;
     // f
-  } else if (e.keyCode === 70) {
+  }else if (e.keyCode === 70) {
     gameState.drag = false;
-    // t
-  } else if (e.keyCode === 84) {
-    gameState.borderBounce = false;
-    gameState.borderTeleport = true;
-  } else if (e.keyCode === 66) {
-    gameState.borderBounce = false;
-  }
+  } 
   if (player) player.updatePlayerForce();
 }
 
@@ -247,16 +250,26 @@ function keyUp(e) {
     // g
   } else if (e.keyCode === 71) {
     gameState.gravity = false;
+    pairwiseForceStrength = 0;
+    // r
+  } else if (e.keyCode === 82) {
+    gameState.repulsion = false;
+    pairwiseForceStrength = 0;
     // f
-  } else if (e.keyCode === 70) {
+  }else if (e.keyCode === 70) {
     gameState.drag = true;
+    // t - toggle teleport
   } else if (e.keyCode === 84) {
-    gameState.borderBounce = true;
-    gameState.borderTeleport = false;
+    gameState.borderTeleport = !gameState.borderTeleport;
+    if (gameState.borderTeleport) gameState.borderBounce = false;
+    // b - toggle border bounce
   } else if (e.keyCode === 66) {
-    gameState.borderBounce = true;
+    gameState.borderBounce = !gameState.borderBounce;
+    if (gameState.borderBounce) gameState.borderTeleport = false;
+    // z
   } else if (e.keyCode === 90) {
     zeroTotalMomentumAndPosition();
+    // a
   } else if (e.keyCode === 65) {
     addBlob();
   } 
@@ -459,7 +472,7 @@ class Blob {
       this.velocity[1] += speedUp*this.force[1];
     }
     // this is the effect of gravity on the blob
-    if (gameState.gravity) {
+    if (gameState.gravity || gameState.repulsion) {
       this.velocity[0] += this.gravity[0]/this.mass;
       this.velocity[1] += this.gravity[1]/this.mass;
     }
@@ -500,7 +513,7 @@ class Blob {
     if (gameState.borderBounce) this.borderBounce();
     this.updateDiv();
     // since the gravity is recalculated each iteration it needs to be rezeroed each time.
-    if (gameState.gravity) this.gravity = [0,0];
+    if (gameState.gravity || gameState.repulsion) this.gravity = [0,0];
   }
 
   deleteDiv() {
@@ -561,9 +574,9 @@ class Blob {
   // deal with all pairwise interactions between blobs, assumes player will be passed first if at all (player)
   static pairwiseInteraction (a,b) {
     // gravity and repulsion interaction
-    if (gameState.gravity) {
+    if (gameState.gravity || gameState.repulsion) {
       let distance = Blob.getDistance(a,b,true),
-          magnitude = G*a.mass*b.mass/Math.pow(distance,2);
+          magnitude = pairwiseForceStrength*a.mass*b.mass/Math.pow(distance,2);
 
       let gravityTermHorizontal = magnitude*(a.position[0] - b.position[0])/distance,
           gravityTermVertical = magnitude*(a.position[1] - b.position[1])/distance;
