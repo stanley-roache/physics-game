@@ -322,14 +322,14 @@ function zeroTotalMomentumAndPosition() {
 // This is the class for an individual blob
 
 class Blob {
-  constructor (radius, position, velocity = [0,0], isPlayer = false, gravity = [0,0]) {
+  constructor (radius, position, velocity = [0,0], isPlayer = false, pairwiseForce = [0,0]) {
     this.radius = radius;
     this.mass = Math.pow(radius,3);
     this.position = position;
     this.velocity = velocity;
     this.force = [0,0];
     this.isPlayer = isPlayer;
-    this.gravity = gravity;
+    this.pairwiseForce = pairwiseForce;
 
     // blob only
     this.moving = false;
@@ -471,10 +471,10 @@ class Blob {
       this.velocity[0] += speedUp*this.force[0];
       this.velocity[1] += speedUp*this.force[1];
     }
-    // this is the effect of gravity on the blob
+    // this is the effect of pairwise forces on the blob
     if (gameState.gravity || gameState.repulsion) {
-      this.velocity[0] += this.gravity[0]/this.mass;
-      this.velocity[1] += this.gravity[1]/this.mass;
+      this.velocity[0] += this.pairwiseForce[0]/this.mass;
+      this.velocity[1] += this.pairwiseForce[1]/this.mass;
     }
   }
 
@@ -513,7 +513,7 @@ class Blob {
     if (gameState.borderBounce) this.borderBounce();
     this.updateDiv();
     // since the gravity is recalculated each iteration it needs to be rezeroed each time.
-    if (gameState.gravity || gameState.repulsion) this.gravity = [0,0];
+    if (gameState.gravity || gameState.repulsion) this.pairwiseForce = [0,0];
   }
 
   deleteDiv() {
@@ -578,13 +578,13 @@ class Blob {
       let distance = Blob.getDistance(a,b,true),
           magnitude = pairwiseForceStrength*a.mass*b.mass/Math.pow(distance,2);
 
-      let gravityTermHorizontal = magnitude*(a.position[0] - b.position[0])/distance,
-          gravityTermVertical = magnitude*(a.position[1] - b.position[1])/distance;
+      let forceTermHorizontal = magnitude*(a.position[0] - b.position[0])/distance,
+          forceTermVertical = magnitude*(a.position[1] - b.position[1])/distance;
 
-      a.gravity[0] -= gravityTermHorizontal;
-      a.gravity[1] -= gravityTermVertical;
-      b.gravity[0] += gravityTermHorizontal
-      b.gravity[1] += gravityTermVertical;
+      a.pairwiseForce[0] -= forceTermHorizontal;
+      a.pairwiseForce[1] -= forceTermVertical;
+      b.pairwiseForce[0] += forceTermHorizontal
+      b.pairwiseForce[1] += forceTermVertical;
     }
   }
 }
