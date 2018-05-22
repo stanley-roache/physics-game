@@ -512,7 +512,7 @@ class Blob {
     if (gameState.borderTeleport) this.teleport();
     if (gameState.borderBounce) this.borderBounce();
     this.updateDiv();
-    // since the gravity is recalculated each iteration it needs to be rezeroed each time.
+    // since the pairwise force is recalculated each iteration it needs to be rezeroed each time.
     if (gameState.gravity || gameState.repulsion) this.pairwiseForce = [0,0];
   }
 
@@ -533,7 +533,7 @@ class Blob {
       this.position[0] + (other.position[0] - this.position[0]) * weighting,
       this.position[1] + (other.position[1] - this.position[1]) * weighting
     ];
-    // calculates valocity based on total momentum
+    // calculates velocity based on total momentum
     let newVelocity = [
       this.velocity[0] + (other.velocity[0] - this.velocity[0]) * weighting,
       this.velocity[1] + (other.velocity[1] - this.velocity[1]) * weighting
