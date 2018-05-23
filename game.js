@@ -92,16 +92,19 @@ function iteration() {
   // This is because when I tried to use array.filter the resultant array was still the same length and contained nulls
   var newBlobs = [];
 
+  // this loop applies to every blob (except for possible player) in the game
   for (var i = 0; i < blobs.length; i++) {
     // it might be null, skip if it is
     if (!blobs[i]) continue;
 
+    // this function creates random blob movement
     blobs[i].blobWander();
+    // moves blob, applies all forces
     blobs[i].update();
 
     if (player) {
       let distance = Blob.getDistance(player,blobs[i],false);
-      // if touching player
+      // if blob is touching player
       if (distance < 0) {
         if (player.biggerThan(blobs[i])) {
           // combine blobs, create new player blob and carry over force
@@ -120,12 +123,14 @@ function iteration() {
         }
         // if not touching player
       } else {
+        // apply opacity to the blob so that it gradually comes into view only near the player
         blobs[i].setOpacity(Math.max(1-(distance/viewDistance), 0));
+        // apply gravity or repulsion in this function
         Blob.pairwiseInteraction(player,blobs[i]);
       }
     }
     
-    // This loop runs for every pair of blobs
+    // This loop runs for every PAIR of blobs
     for (var j = i + 1; j < blobs.length; j++) {
       // skip null blobs
       if (!blobs[j]) continue;
@@ -145,6 +150,7 @@ function iteration() {
   // the array is updated with remaining blobs in an array with no nulls
   blobs = newBlobs;
 
+  // calls itself again with a timeout determined by fps- frames per second, this is what makes it dynamic
   t=setTimeout("iteration()",1000/fps);
 }
 
@@ -154,17 +160,19 @@ function playerDeath() {
   revealAll();
 }
 
+// reveal all blobs on page
 function revealAll() {
   for (let i = 0; i < blobs.length; i++) {
     blobs[i].setOpacity(1);
   }
 }
 
+// adds new blobs randomly as long as the max populatoin isn't reached
 function repopulate() {
-  // adds new blobs randomly as long as the max populatoin isn't reached
   if (blobs.length < maxPop && Math.random() > 0.99) addBlob();
 }
 
+// adds one new blob, can be given manual properties but defaults to random
 function addBlob(radius = getCreationRadius(), pos = getRandomBorderPosition(), vel = getRandomStartingVelocity()) {
   let newblob = new Blob(
     radius,
@@ -176,6 +184,7 @@ function addBlob(radius = getCreationRadius(), pos = getRandomBorderPosition(), 
   blobs.push(newblob);
 }
 
+// creates entry point for new point along border
 function getRandomBorderPosition() {
   let entryPoint;
   let x = Math.random()*4;
@@ -191,6 +200,7 @@ function getRandomBorderPosition() {
   return entryPoint;
 }
 
+// creates random starting velocity
 function getRandomStartingVelocity() {
   return [Math.random()*4 - 2,Math.random()*4 - 2];
 }
@@ -212,6 +222,7 @@ function updateWindowSize() {
 
 // When key pressed
 function keyDown(e) {
+  // first four deal with player movement
   if (e.keyCode === 39) {
     keyState.right = true;
   } else if (e.keyCode === 37) {
@@ -220,17 +231,17 @@ function keyDown(e) {
     keyState.up = true;
   } else if (e.keyCode === 40) {
     keyState.down = true;
-    // g
+    // g - gravity
   } else if (e.keyCode === 71) {
     gameState.gravity = true;
     gameState.repulsion = false;
     pairwiseForceStrength = G;
-    // r
+    // r - repulsion
   } else if (e.keyCode === 82) {
     gameState.gravity = false;
     gameState.repulsion = true;
     pairwiseForceStrength = R;
-    // f
+    // f - vacuum state (f for frictionless)
   }else if (e.keyCode === 70) {
     gameState.drag = false;
   } 
@@ -258,7 +269,7 @@ function keyUp(e) {
     // f
   }else if (e.keyCode === 70) {
     gameState.drag = true;
-    // t - toggle teleport
+    // t - toggle teleport (blobs dissapear one side and reappear on the other)
   } else if (e.keyCode === 84) {
     gameState.borderTeleport = !gameState.borderTeleport;
     if (gameState.borderTeleport) gameState.borderBounce = false;
@@ -266,10 +277,10 @@ function keyUp(e) {
   } else if (e.keyCode === 66) {
     gameState.borderBounce = !gameState.borderBounce;
     if (gameState.borderBounce) gameState.borderTeleport = false;
-    // z
+    // z - this centres blobs on the middle of screen while maintaining their relative positions and velocities
   } else if (e.keyCode === 90) {
     zeroTotalMomentumAndPosition();
-    // a
+    // a - add one blob on command
   } else if (e.keyCode === 65) {
     addBlob();
   } 
@@ -287,6 +298,7 @@ function keyPress(e) {
   } 
 }
 
+// when blobs collide play this sound
 function playSound() {
   soundIndex = (soundIndex+1)%audioDepth;
   sounds[soundIndex].play();
@@ -320,7 +332,6 @@ function zeroTotalMomentumAndPosition() {
 }
 
 // This is the class for an individual blob
-
 class Blob {
   constructor (radius, position, velocity = [0,0], isPlayer = false, pairwiseForce = [0,0]) {
     this.radius = radius;
@@ -331,7 +342,7 @@ class Blob {
     this.isPlayer = isPlayer;
     this.pairwiseForce = pairwiseForce;
 
-    // blob only
+    // non player blob only
     this.moving = false;
 
     // creates a corresponding div to display on screen
@@ -343,6 +354,19 @@ class Blob {
     if (isPlayer) {
       this.blobDiv.id = 'player';
     }
+  }
+
+  // this master call contains all the things that need to happen to each blob each iteration
+  update() {
+    this.move();
+    if (gameState.drag) this.viscosity();
+    // this.hunger();
+    this.accelerate();
+    if (gameState.borderTeleport) this.teleport();
+    if (gameState.borderBounce) this.borderBounce();
+    this.updateDiv();
+    // since the pairwise force is recalculated each iteration it needs to be rezeroed each time.
+    if (gameState.gravity || gameState.repulsion) this.pairwiseForce = [0,0];
   }
 
   // based on the current state of arrow keys, set the force of the player
@@ -408,7 +432,7 @@ class Blob {
     return Math.sqrt(Math.pow(this.velocity[0], 2) + Math.pow(this.velocity[1], 2));
   }
 
-  // update the div position and size
+  // update the div position and size, this is what effectively links the javascript object to the DOM
   updateDiv() {
     this.blobDiv.style.left = (this.position[0] - this.radius) + 'px';
     this.blobDiv.style.bottom = (this.position[1] - this.radius) + 'px';
@@ -422,7 +446,7 @@ class Blob {
     this.position[1] += this.velocity[1];
   }
 
-  // This function decellerates the as a function of its radius and velocity
+  // This function decellerates the as a function of its radius and velocity, this means bigger blobs are slower
   viscosity() {
     // this.velocity[0] *= (1-drag*Math.sqrt(this.radius)*Math.pow(this.velocity[0],2));
     // this.velocity[1] *= (1-drag*Math.sqrt(this.radius)*Math.pow(this.velocity[1],2));
@@ -437,6 +461,9 @@ class Blob {
     }
   }
 
+  // these functions are necessary because this isn't quite a regular object but a 'class', this means
+  // that from the global context blob properties can't be set manually (blob[0].radius = x), they 
+  // have to be asked politely for information and be asked to change
   getRadius() {
     return this.radius;
   }
@@ -464,7 +491,7 @@ class Blob {
     this.position[1] += adjustment[1];
   }
 
-  // accelerate the blob by its force
+  // accelerate the blob
   accelerate() {
     // this component is the blobs own movement, player or otherwise
     if (gameState.drag) {
@@ -501,19 +528,6 @@ class Blob {
   teleport() {
     this.position[0] = ((this.position[0] + windowSize.horizontal) % (windowSize.horizontal));
     this.position[1] = ((this.position[1] + windowSize.vertical) % (windowSize.vertical));
-  }
-
-  // this master call contains all the things that need to happen to each blob each iteration
-  update() {
-    this.move();
-    if (gameState.drag) this.viscosity();
-    // this.hunger();
-    this.accelerate();
-    if (gameState.borderTeleport) this.teleport();
-    if (gameState.borderBounce) this.borderBounce();
-    this.updateDiv();
-    // since the pairwise force is recalculated each iteration it needs to be rezeroed each time.
-    if (gameState.gravity || gameState.repulsion) this.pairwiseForce = [0,0];
   }
 
   deleteDiv() {
