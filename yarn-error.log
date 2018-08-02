@@ -1,5 +1,5 @@
 Arguments: 
-  /home/student/.nvm/versions/node/v8.10.0/bin/node /usr/share/yarn/bin/yarn.js webpack js/game.js bundle.js
+  /home/student/.nvm/versions/node/v8.10.0/bin/node /usr/share/yarn/bin/yarn.js webpack src/index.js bundle.js
 
 PATH: 
   /home/student/.nvm/versions/node/v8.10.0/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games
@@ -2568,7 +2568,7 @@ Trace:
   Error: Command failed.
   Exit code: 2
   Command: sh
-  Arguments: -c /home/student/workspace/physics-game/node_modules/.bin/webpack js/game.js bundle.js
+  Arguments: -c /home/student/workspace/physics-game/node_modules/.bin/webpack src/index.js bundle.js
   Directory: /home/student/workspace/physics-game
   Output:
   

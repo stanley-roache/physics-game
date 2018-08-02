@@ -1,6 +1,28 @@
 import { playSound } from './sound'
 import { getGameWindow } from './window'
-import './globals'
+
+let {
+  blobs,
+  t,
+  windowSize,
+  keyState,
+  gameState,
+  player,
+  pairwiseForceStrength,
+  viewDistance,
+  initialSize,
+  initialPos,
+  speedUp,
+  diagonal,
+  maxPop,
+  drag,
+  appetite,
+  G,
+  R,
+  minSize,
+  borderElasticity,
+  fps
+} = window.GLOBALS
 
 export default class Blob {
   constructor(radius, position, velocity = [0, 0], isPlayer = false, pairwiseForce = [0, 0]) {

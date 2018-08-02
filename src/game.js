@@ -1,8 +1,30 @@
 import Blob from './blob'
 import { getGameWindow } from './window'
-import GLOBALS from './globals'
 
-window.onload = function () {
+let {
+  blobs,
+  t,
+  windowSize,
+  keyState,
+  gameState,
+  player,
+  pairwiseForceStrength,
+  viewDistance,
+  initialSize,
+  initialPos,
+  speedUp,
+  diagonal,
+  maxPop,
+  drag,
+  appetite,
+  G,
+  R,
+  minSize,
+  borderElasticity,
+  fps
+} = window.GLOBALS
+
+export default function start() {
   updateWindowSize();
 
   document.addEventListener('keydown', keyDown, false);
@@ -13,11 +35,11 @@ window.onload = function () {
 
   toggleInstructions();
 
-  iteration();
+  setInterval(iteration, 1000 / fps)
 };
 
 function createPlayer() {
-  GLOBALS.player = new Blob(
+  player = new Blob(
     initialSize,
     // the slice makes sure a copy of the array is being passed, otherwise location and speed persist through death
     initialPos.slice(),
@@ -31,7 +53,7 @@ function toggleInstructions() {
 }
 
 // this function gets called several times a second and has to loop through everything to make the game real time
-function iteration() {
+window.iteration = function() {
   // add new blobs
   repopulate();
 
@@ -103,9 +125,6 @@ function iteration() {
 
   // the array is updated with remaining blobs in an array with no nulls
   blobs = newBlobs;
-
-  // calls itself again with a timeout determined by fps- frames per second, this is what makes it dynamic
-  t = setTimeout("iteration()", 1000 / fps);
 }
 
 function playerDeath() {
@@ -167,7 +186,7 @@ function getCreationRadius() {
 }
 
 // this function gets called when the window size changes, it is mainly so that the player starting point gets updated
-function updateWindowSize() {
+window.updateWindowSize = function () {
   let windowDimensions = getGameWindow().getBoundingClientRect();
   windowSize.horizontal = windowDimensions.width;
   windowSize.vertical = windowDimensions.height;
@@ -278,3 +297,4 @@ function zeroTotalMomentumAndPosition() {
     allBlobs[i].adjustPositionBy(positionShift);
   }
 }
+

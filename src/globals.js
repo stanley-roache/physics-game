@@ -1,4 +1,4 @@
-export default {
+window.GLOBALS = {
   blobs: [],
   t: null,
   windowSize: {
