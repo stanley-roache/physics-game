@@ -1,0 +1,13 @@
+{
+  "dependencies": {
+    "babel-loader": "^7.1.5",
+    "webpack": "^4.16.3",
+    "webpack-cli": "^3.1.0"
+  },
+  "name": "physics-game",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/stanley-roache/physics-game",
+  "author": "stanley-roache <stan.roache@gmail.com>",
+  "license": "MIT"
+}
