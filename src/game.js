@@ -194,7 +194,7 @@ window.updateWindowSize = function () {
 }
 
 // When key pressed
-function keyDown(e) {
+window.keyDown = function (e) {
   // first four deal with player movement
   if (e.keyCode === 39) {
     keyState.right = true;
@@ -222,7 +222,7 @@ function keyDown(e) {
 }
 
 //  When key released
-function keyUp(e) {
+window.keyUp = function (e) {
   if (e.keyCode === 39) {
     keyState.right = false;
   } else if (e.keyCode === 37) {
@@ -261,7 +261,7 @@ function keyUp(e) {
 }
 
 // when key pressed
-function keyPress(e) {
+window.keyPress = function (e) {
   // spacebar
   if (e.keyCode === 32) {
     if (!player) {
