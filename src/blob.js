@@ -1,4 +1,6 @@
 import { playSound } from './sound'
+import { getGameWindow } from './window'
+import './globals'
 
 export default class Blob {
   constructor(radius, position, velocity = [0, 0], isPlayer = false, pairwiseForce = [0, 0]) {
@@ -16,7 +18,7 @@ export default class Blob {
     // creates a corresponding div to display on screen
     this.blobDiv = document.createElement('div');
     this.blobDiv.classList.add('blob');
-    gameWindow.appendChild(this.blobDiv);
+    getGameWindow().appendChild(this.blobDiv);
 
     // sets the div id for player styling
     if (isPlayer) {

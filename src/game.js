@@ -1,48 +1,8 @@
 import Blob from './blob'
-
-let blobs = [],
-  t,
-  gameWindow,
-  windowSize = {
-    horizontal: 0,
-    vertical: 0
-  };
-
-let keyState = {
-  left: false,
-  right: false,
-  down: false,
-  up: false,
-}
-
-let gameState = {
-  gravity: false,
-  repulsion: false,
-  drag: true,
-  borderBounce: true,
-  borderTeleport: false,
-}
-
-let player,
-  pairwiseForceStrength = 0
-
-const speedUp = 0.5,
-  diagonal = 1.0 / Math.sqrt(2),
-  maxPop = 10,
-  // maxMass = ?,
-  drag = 0.004,
-  appetite = 0.0005,
-  G = 0.5,
-  R = -0.5,
-  minSize = 10,
-  borderElasticity = 0.005,
-  fps = 50,
-  initialSize = 10,
-  initialPos = [50, 50],
-  viewDistance = 200
+import { getGameWindow } from './window'
+import GLOBALS from './globals'
 
 window.onload = function () {
-  gameWindow = document.getElementById('game-display');
   updateWindowSize();
 
   document.addEventListener('keydown', keyDown, false);
@@ -57,7 +17,7 @@ window.onload = function () {
 };
 
 function createPlayer() {
-  player = new Blob(
+  GLOBALS.player = new Blob(
     initialSize,
     // the slice makes sure a copy of the array is being passed, otherwise location and speed persist through death
     initialPos.slice(),
@@ -208,7 +168,7 @@ function getCreationRadius() {
 
 // this function gets called when the window size changes, it is mainly so that the player starting point gets updated
 function updateWindowSize() {
-  let windowDimensions = document.getElementById('game-display').getBoundingClientRect();
+  let windowDimensions = getGameWindow().getBoundingClientRect();
   windowSize.horizontal = windowDimensions.width;
   windowSize.vertical = windowDimensions.height;
   initialPos = [windowSize.horizontal / 2, windowSize.vertical / 2];
