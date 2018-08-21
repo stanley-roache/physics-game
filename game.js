@@ -1,4 +1,4 @@
-var blobs = [],
+let blobs = [],
     t,
     fps = 50,
     gameWindow,
@@ -7,14 +7,14 @@ var blobs = [],
       vertical: 0
     };
 
-var keyState = {
+const keyState = {
   left: false,
   right: false,
   down: false,
   up: false,
 }
 
-var gameState = {
+const gameState = {
   gravity: false,
   repulsion: false,
   drag: true,
@@ -22,7 +22,7 @@ var gameState = {
   borderTeleport: false,
 }
 
-var player,
+let player,
     initialSize = 10,
     initialPos = [50,50],
     pairwiseForceStrength = 0,
@@ -41,7 +41,7 @@ const speedUp = 0.5,
       audioDepth = 5;
 
 // this creates an array of audio objects to play the popping sound so that it can be played multiple tiems at once
-var sounds = [],
+let sounds = [],
     soundIndex = 0;
 for (let i = 0; i < audioDepth; i++) {
   sounds.push(new Audio("sounds/bubble_pop.mp3"))
@@ -90,10 +90,10 @@ function iteration() {
 
   // Each time the array is iterated through a new array is created,
   // This is because when I tried to use array.filter the resultant array was still the same length and contained nulls
-  var newBlobs = [];
+  let newBlobs = [];
 
   // this loop applies to every blob (except for possible player) in the game
-  for (var i = 0; i < blobs.length; i++) {
+  for (let i = 0; i < blobs.length; i++) {
     // it might be null, skip if it is
     if (!blobs[i]) continue;
 
@@ -108,7 +108,7 @@ function iteration() {
       if (distance < 0) {
         if (player.biggerThan(blobs[i])) {
           // combine blobs, create new player blob and carry over force
-          var currentForce = player.getForce();
+          const currentForce = player.getForce();
           player = player.consume(blobs[i]);
           player.setForce(currentForce);
           // player.updateDiv();
@@ -131,7 +131,7 @@ function iteration() {
     }
     
     // This loop runs for every PAIR of blobs
-    for (var j = i + 1; j < blobs.length; j++) {
+    for (let j = i + 1; j < blobs.length; j++) {
       // skip null blobs
       if (!blobs[j]) continue;
       // are they touching
@@ -577,7 +577,7 @@ class Blob {
 
   // This function checks how far apart two blobs are, either their surfaces or their centres
   static getDistance (a,b, fromCentre) {
-    var centre = Math.sqrt(
+    const centre = Math.sqrt(
       Math.pow((a.position[0] - b.position[0]), 2) + 
       Math.pow((a.position[1] - b.position[1]), 2)
     );
