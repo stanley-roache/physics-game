@@ -1,4 +1,4 @@
-# Circles
+# Cannibal Circles
 
 https://stanley-roache.github.io/physics-game/
 
