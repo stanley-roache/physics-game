@@ -3,24 +3,14 @@ import { getGameWindow } from './window'
 
 let {
   blobs,
-  t,
   windowSize,
   keyState,
   gameState,
   player,
-  pairwiseForceStrength,
   viewDistance,
   initialSize,
   initialPos,
-  speedUp,
-  diagonal,
   maxPop,
-  drag,
-  appetite,
-  G,
-  R,
-  minSize,
-  borderElasticity,
   fps
 } = window.GLOBALS
 
@@ -208,12 +198,10 @@ window.keyDown = function (e) {
   } else if (e.keyCode === 71) {
     gameState.gravity = true;
     gameState.repulsion = false;
-    pairwiseForceStrength = G;
     // r - repulsion
   } else if (e.keyCode === 82) {
     gameState.gravity = false;
     gameState.repulsion = true;
-    pairwiseForceStrength = R;
     // f - vacuum state (f for frictionless)
   } else if (e.keyCode === 70) {
     gameState.drag = false;

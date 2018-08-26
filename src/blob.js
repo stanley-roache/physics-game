@@ -2,8 +2,6 @@ import { playSound } from './sound'
 import { getGameWindow } from './window'
 
 let {
-  blobs,
-  t,
   windowSize,
   keyState,
   gameState,
@@ -233,7 +231,7 @@ export default class Blob {
   // given two blobs, this function returns a single blob such that mass, centre of mass and momentum are conserved
   consume(other) {
     // relative mass
-    let weighting = Math.pow(other.radius, 3) / (Math.pow(this.radius, 3) + Math.pow(other.radius, 3));
+    const weighting = Math.pow(other.radius, 3) / (Math.pow(this.radius, 3) + Math.pow(other.radius, 3));
     // calculates centre of mass of both blobs
     let newPosition = [
       this.position[0] + (other.position[0] - this.position[0]) * weighting,
@@ -269,23 +267,26 @@ export default class Blob {
 
   // This function checks how far apart two blobs are, either their surfaces or their centres
   static getDistance(a, b, fromCentre) {
-    var centre = Math.sqrt(
+    const centre = Math.sqrt(
       Math.pow((a.position[0] - b.position[0]), 2) +
       Math.pow((a.position[1] - b.position[1]), 2)
     );
-    if (fromCentre) return centre;
-    else return (centre - (a.radius + b.radius));
+    return (fromCentre) 
+      ? centre
+      : (centre - (a.radius + b.radius));
   }
 
   // deal with all pairwise interactions between blobs, assumes player will be passed first if at all (player)
   static pairwiseInteraction(a, b) {
     // gravity and repulsion interaction
     if (gameState.gravity || gameState.repulsion) {
-      let distance = Blob.getDistance(a, b, true),
-        magnitude = pairwiseForceStrength * a.mass * b.mass / Math.pow(distance, 2);
+      const distance = Blob.getDistance(a, b, true)
+      let magnitude = pairwiseForceStrength * a.mass * b.mass / Math.pow(distance, 2);
 
-      let forceTermHorizontal = magnitude * (a.position[0] - b.position[0]) / distance,
-        forceTermVertical = magnitude * (a.position[1] - b.position[1]) / distance;
+      magnitude *= (gameState.gravity ? G : R)
+
+      const forceTermHorizontal = magnitude * (a.position[0] - b.position[0]) / distance,
+            forceTermVertical = magnitude * (a.position[1] - b.position[1]) / distance;
 
       a.pairwiseForce[0] -= forceTermHorizontal;
       a.pairwiseForce[1] -= forceTermVertical;

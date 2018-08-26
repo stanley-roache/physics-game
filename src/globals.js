@@ -1,6 +1,5 @@
 window.GLOBALS = {
   blobs: [],
-  t: null,
   windowSize: {
     horizontal: 0,
     vertical: 0
