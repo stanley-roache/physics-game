@@ -19,7 +19,7 @@ window.GLOBALS = {
     borderTeleport: false,
   },
   player: null,
-  pairwiseForceStrength: 0,
+  pairwiseForceStrength: 1,
   viewDistance: 200,
   initialSize: 10,
   initialPos: [50, 50],
