@@ -6,5 +6,6 @@ module.exports = {
     output: {
         filename: './bundle.js'
     },
-    mode: 'production'
+    mode: 'production',
+    devtool: 'source-map'
 };
