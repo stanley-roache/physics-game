@@ -75,7 +75,7 @@ window.iteration = function() {
         if (player.biggerThan(blobs[i])) {
           // combine blobs, create new player blob and carry over force
           var currentForce = player.getForce();
-          player = player.consume(blobs[i]);
+          player = player.consume(blobs[i], true);
           player.setForce(currentForce);
           // player.updateDiv();
 

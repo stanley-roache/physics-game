@@ -229,7 +229,7 @@ export default class Blob {
   }
 
   // given two blobs, this function returns a single blob such that mass, centre of mass and momentum are conserved
-  consume(other) {
+  consume(other, playerEats = false) {
     // relative mass
     const weighting = Math.pow(other.radius, 3) / (Math.pow(this.radius, 3) + Math.pow(other.radius, 3));
     // calculates centre of mass of both blobs
@@ -257,7 +257,7 @@ export default class Blob {
       newRadius,
       newPosition,
       newVelocity,
-      (this === player)
+      playerEats
     );
   }
 
