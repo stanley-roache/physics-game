@@ -66,8 +66,9 @@ window.iteration = function() {
     blobs[i].update();
 
     if (player) {
+      let distance = Blob.getDistance(blobs[i], player, false);
       // if blob is touching player
-      if (Blob.getDistance(blobs[i], player, false) < 0) {
+      if (distance < 0) {
         if (player.biggerThan(blobs[i])) {
           // combine blobs, create new player blob and carry over force
           const currentForce = player.getForce();
