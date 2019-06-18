@@ -20,7 +20,7 @@ window.GLOBALS = {
   player: null,
   pairwiseForceStrength: 1,
   viewDistance: 200,
-  initialSize: 10,
+  initialSize: 14,
   initialPos: [50, 50],
   speedUp: 0.5,
   diagonal: 1.0 / Math.sqrt(2),
