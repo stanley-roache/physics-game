@@ -31,8 +31,7 @@ export default function start() {
 function createPlayer() {
   player = new Blob(
     initialSize,
-    // the slice makes sure a copy of the array is being passed, otherwise location and speed persist through death
-    initialPos.slice(),
+    [...initialPos],
     [0, 0],
     true
   );
@@ -56,11 +55,9 @@ window.iteration = function() {
 
   // Each time the array is iterated through a new array is created,
   // This is because when I tried to use array.filter the resultant array was still the same length and contained nulls
-  var newBlobs = [];
+  let newBlobs = [];
 
-  // this loop applies to every blob (except for possible player) in the game
-  for (var i = 0; i < blobs.length; i++) {
-    // it might be null, skip if it is
+  for (let i = 0; i < blobs.length; i++) {
     if (!blobs[i]) continue;
 
     // this function creates random blob movement
@@ -69,12 +66,11 @@ window.iteration = function() {
     blobs[i].update();
 
     if (player) {
-      let distance = Blob.getDistance(player, blobs[i], false);
       // if blob is touching player
-      if (distance < 0) {
+      if (Blob.getDistance(blobs[i], player, false) < 0) {
         if (player.biggerThan(blobs[i])) {
           // combine blobs, create new player blob and carry over force
-          var currentForce = player.getForce();
+          const currentForce = player.getForce();
           player = player.consume(blobs[i], true);
           player.setForce(currentForce);
           // player.updateDiv();
@@ -97,8 +93,7 @@ window.iteration = function() {
     }
 
     // This loop runs for every PAIR of blobs
-    for (var j = i + 1; j < blobs.length; j++) {
-      // skip null blobs
+    for (let j = i + 1; j < blobs.length; j++) {
       if (!blobs[j]) continue;
       // are they touching
       if (Blob.getDistance(blobs[i], blobs[j], false) < 0) {
@@ -109,11 +104,9 @@ window.iteration = function() {
         Blob.pairwiseInteraction(blobs[i], blobs[j]);
       }
     }
-    // make sure the remaining blob gets carried to the next array
     newBlobs.push(blobs[i]);
   }
 
-  // the array is updated with remaining blobs in an array with no nulls
   blobs = newBlobs;
 }
 
@@ -135,7 +128,6 @@ function repopulate() {
   if (blobs.length < maxPop && Math.random() > 0.99) addBlob();
 }
 
-// adds one new blob, can be given manual properties but defaults to random
 function addBlob(radius = getCreationRadius(), pos = getRandomBorderPosition(), vel = getRandomStartingVelocity()) {
   let newblob = new Blob(
     radius,
@@ -143,11 +135,9 @@ function addBlob(radius = getCreationRadius(), pos = getRandomBorderPosition(), 
     vel,
     false
   );
-  // put it in with its mates
   blobs.push(newblob);
 }
 
-// creates entry point for new point along border
 function getRandomBorderPosition() {
   let entryPoint;
   let x = Math.random() * 4;
@@ -163,7 +153,6 @@ function getRandomBorderPosition() {
   return entryPoint;
 }
 
-// creates random starting velocity
 function getRandomStartingVelocity() {
   return [Math.random() * 4 - 2, Math.random() * 4 - 2];
 }
@@ -175,7 +164,6 @@ function getCreationRadius() {
   return 0.8 * initialSize * Math.pow(5, Math.pow(Math.random(), 2));
 }
 
-// this function gets called when the window size changes, it is mainly so that the player starting point gets updated
 window.updateWindowSize = function () {
   let windowDimensions = getGameWindow().getBoundingClientRect();
   windowSize.horizontal = windowDimensions.width;
@@ -183,7 +171,6 @@ window.updateWindowSize = function () {
   initialPos = [windowSize.horizontal / 2, windowSize.vertical / 2];
 }
 
-// When key pressed
 window.keyDown = function (e) {
   // first four deal with player movement
   if (e.keyCode === 39) {
@@ -209,7 +196,6 @@ window.keyDown = function (e) {
   if (player) player.updatePlayerForce();
 }
 
-//  When key released
 window.keyUp = function (e) {
   if (e.keyCode === 39) {
     keyState.right = false;
