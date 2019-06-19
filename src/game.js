@@ -45,7 +45,7 @@ window.iteration = function() {
   repopulate();
 
   if (player) {
-    player.update();
+    player.updateMovement();
     viewDistance = initialSize * 10 + player.radius * 5;
   }
 
@@ -57,7 +57,7 @@ window.iteration = function() {
     if (!blobs[i]) continue;
 
     blobs[i].blobWander();
-    blobs[i].update();
+    blobs[i].updateMovement();
 
     if (player) {
       let distance = Blob.getDistance(blobs[i], player, false);

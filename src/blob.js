@@ -5,21 +5,15 @@ let {
   windowSize,
   keyState,
   gameState,
-  player,
   pairwiseForceStrength,
-  viewDistance,
-  initialSize,
-  initialPos,
   speedUp,
   diagonal,
-  maxPop,
   drag,
   appetite,
   G,
   R,
   minSize,
-  borderElasticity,
-  fps
+  borderElasticity
 } = window.GLOBALS
 
 export default class Blob {
@@ -47,7 +41,7 @@ export default class Blob {
   }
 
   // this master call contains all the things that need to happen to each blob each iteration
-  update() {
+  updateMovement() {
     this.move();
     if (gameState.drag) this.viscosity();
     // this.hunger();
