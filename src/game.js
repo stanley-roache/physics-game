@@ -41,15 +41,11 @@ function toggleInstructions() {
   document.getElementById('instructions').classList.toggle('hidden');
 }
 
-// this function gets called several times a second and has to loop through everything to make the game real time
 window.iteration = function() {
-  // add new blobs
   repopulate();
 
-  // player movement
   if (player) {
     player.update();
-    // this updates the range of view of the player
     viewDistance = initialSize * 10 + player.radius * 5;
   }
 
@@ -60,46 +56,35 @@ window.iteration = function() {
   for (let i = 0; i < blobs.length; i++) {
     if (!blobs[i]) continue;
 
-    // this function creates random blob movement
     blobs[i].blobWander();
-    // moves blob, applies all forces
     blobs[i].update();
 
     if (player) {
       let distance = Blob.getDistance(blobs[i], player, false);
-      // if blob is touching player
       if (distance < 0) {
         if (player.biggerThan(blobs[i])) {
-          // combine blobs, create new player blob and carry over force
           const currentForce = player.getForce();
           player = player.consume(blobs[i], true);
           player.setForce(currentForce);
-          // player.updateDiv();
-
           blobs[i] = null;
-          //  in this case the blob is now null so we want to skip to the next blob in the array
           continue;
         } else {
-          // eaten! in this case we keep updating the other blobs so there is no continue statement
           blobs[i] = blobs[i].consume(player);
           playerDeath();
         }
-        // if not touching player
       } else {
         // apply opacity to the blob so that it gradually comes into view only near the player
         blobs[i].setOpacity(Math.max(1 - (distance / viewDistance), 0));
-        // apply gravity or repulsion in this function
         Blob.pairwiseInteraction(player, blobs[i]);
       }
     }
 
-    // This loop runs for every PAIR of blobs
     for (let j = i + 1; j < blobs.length; j++) {
       if (!blobs[j]) continue;
-      // are they touching
       if (Blob.getDistance(blobs[i], blobs[j], false) < 0) {
-        // bigger eats smaller
-        (blobs[i].biggerThan(blobs[j])) ? blobs[i] = blobs[i].consume(blobs[j]) : blobs[i] = blobs[j].consume(blobs[i]);
+        blobs[i] = (blobs[i].biggerThan(blobs[j])) 
+          ? blobs[i].consume(blobs[j]) 
+          : blobs[j].consume(blobs[i]);
         blobs[j] = null;
       } else {
         Blob.pairwiseInteraction(blobs[i], blobs[j]);
@@ -117,14 +102,12 @@ function playerDeath() {
   revealAll();
 }
 
-// reveal all blobs on page
 function revealAll() {
   blobs.forEach(blob => {
     blob.setOpacity(1);
   })
 }
 
-// adds new blobs randomly as long as the max populatoin isn't reached
 function repopulate() {
   if (blobs.length < maxPop && Math.random() > 0.99) addBlob();
 }
@@ -140,28 +123,18 @@ function addBlob(radius = getCreationRadius(), pos = getRandomBorderPosition(), 
 }
 
 function getRandomBorderPosition() {
-  let entryPoint;
-  let x = Math.random() * 4;
-  if (x < 1) {
-    entryPoint = [0, windowSize.vertical * x];
-  } else if (x < 2) {
-    entryPoint = [windowSize.horizontal * (x - 1), 0];
-  } else if (x < 3) {
-    entryPoint = [windowSize.horizontal, windowSize.vertical * (x - 2)];
-  } else {
-    entryPoint = [windowSize.horizontal * (x - 3), 0];
-  }
-  return entryPoint;
+  const x = Math.random() * 4;
+  return (x < 1) ? entryPoint = [0, windowSize.vertical * x] :
+    (x < 2) ? [windowSize.horizontal * (x - 1), 0] :
+    (x < 3) ? [windowSize.horizontal, windowSize.vertical * (x - 2)] :
+    [windowSize.horizontal * (x - 3), 0]
 }
 
 function getRandomStartingVelocity() {
   return [Math.random() * 4 - 2, Math.random() * 4 - 2];
 }
 
-// This function defines the distribution of sizes of new blobs
 function getCreationRadius() {
-  // 0.8*initialSize means the smallest created is just under player starting size,
-  // 5^(random^2) means the biggest size possible is 5 times the start size and the distribution is highly weighted towards smaller sizes
   return 0.8 * initialSize * Math.pow(5, Math.pow(Math.random(), 2));
 }
 
