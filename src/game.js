@@ -1,5 +1,6 @@
 import Blob from './blob'
 import { getGameWindow } from './window'
+import keys from './keycodes'
 
 let {
   blobs,
@@ -146,80 +147,70 @@ window.updateWindowSize = function () {
 }
 
 window.keyDown = function (e) {
-  // first four deal with player movement
-  if (e.keyCode === 39) {
-    keyState.right = true;
-  } else if (e.keyCode === 37) {
-    keyState.left = true;
-  } else if (e.keyCode === 38) {
-    keyState.up = true;
-  } else if (e.keyCode === 40) {
-    keyState.down = true;
-    // g - gravity
-  } else if (e.keyCode === 71) {
-    gameState.gravity = true;
-    gameState.repulsion = false;
-    // r - repulsion
-  } else if (e.keyCode === 82) {
-    gameState.gravity = false;
-    gameState.repulsion = true;
-    // f - vacuum state (f for frictionless)
-  } else if (e.keyCode === 70) {
-    gameState.drag = false;
+  switch (e.keyCode) {
+    case keys.up:
+      keyState.up = true; break;
+    case keys.down:
+      keyState.down = true; break;
+    case keys.left:
+      keyState.left = true; break;
+    case keys.right:
+      keyState.right = true; break;
+    case keys.g:
+      gameState.gravity = true;
+      gameState.repulsion = false; break;
+    case keys.r:
+      gameState.gravity = false;
+      gameState.repulsion = true; break;
+    case keys.f:
+      gameState.drag = false; break;
+    default: 
   }
   if (player) player.updatePlayerForce();
 }
 
 window.keyUp = function (e) {
-  if (e.keyCode === 39) {
-    keyState.right = false;
-  } else if (e.keyCode === 37) {
-    keyState.left = false;
-  } else if (e.keyCode === 38) {
-    keyState.up = false;
-  } else if (e.keyCode === 40) {
-    keyState.down = false;
-    // g
-  } else if (e.keyCode === 71) {
-    gameState.gravity = false;
-    pairwiseForceStrength = 0;
-    // r
-  } else if (e.keyCode === 82) {
-    gameState.repulsion = false;
-    pairwiseForceStrength = 0;
-    // f
-  } else if (e.keyCode === 70) {
-    gameState.drag = true;
-    // t - toggle teleport (blobs dissapear one side and reappear on the other)
-  } else if (e.keyCode === 84) {
-    gameState.borderTeleport = !gameState.borderTeleport;
-    if (gameState.borderTeleport) gameState.borderBounce = false;
-    // b - toggle border bounce
-  } else if (e.keyCode === 66) {
-    gameState.borderBounce = !gameState.borderBounce;
-    if (gameState.borderBounce) gameState.borderTeleport = false;
-    // z - this centres blobs on the middle of screen while maintaining their relative positions and velocities
-  } else if (e.keyCode === 90) {
-    zeroTotalMomentumAndPosition();
-    // a - add one blob on command
-  } else if (e.keyCode === 65) {
-    addBlob();
+  switch (e.keyCode) {
+    case keys.right:
+      keyState.right = false; break;
+    case keys.left:
+      keyState.left = false; break;
+    case keys.up:
+      keyState.up = false; break;
+    case keys.down:
+      keyState.down = false; break;
+    case keys.g:
+      gameState.gravity = false;
+      pairwiseForceStrength = 0; break;
+    case keys.r:
+      gameState.repulsion = false;
+      pairwiseForceStrength = 0; break;
+    case keys.f:
+      gameState.drag = true; break;
+    case keys.t:
+      gameState.borderTeleport = !gameState.borderTeleport;
+      gameState.borderBounce = !gameState.borderTeleport; break;
+    case keys.z:
+      zeroTotalMomentumAndPosition(); break;
+    case keys.a:
+      addBlob(); break;
+    default:
   }
   if (player) player.updatePlayerForce();
 }
 
-// when key pressed
 window.keyPress = function (e) {
-  // spacebar
-  if (e.keyCode === 32) {
-    if (!player) {
-      createPlayer();
-      toggleInstructions();
-    }
+  switch (e.keyCode) {
+    case keys.space:
+      if (!player) {
+        createPlayer();
+        toggleInstructions();
+      } 
+      break;
+    default:
   }
 }
 
-// shifts the velocity of all blobs to zero total momentum and centre COM in middle of screen while conserving relationships
 function zeroTotalMomentumAndPosition() {
   let totalMomentum = [0, 0],
     totalCOM = [0, 0],
