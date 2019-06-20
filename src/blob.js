@@ -29,18 +29,15 @@ export default class Blob {
     // non player blob only
     this.moving = false;
 
-    // creates a corresponding div to display on screen
     this.blobDiv = document.createElement('div');
     this.blobDiv.classList.add('blob');
     getGameWindow().appendChild(this.blobDiv);
 
-    // sets the div id for player styling
     if (isPlayer) {
       this.blobDiv.id = 'player';
     }
   }
 
-  // this master call contains all the things that need to happen to each blob each iteration
   updateMovement() {
     this.move();
     if (gameState.drag) this.viscosity();
@@ -49,11 +46,9 @@ export default class Blob {
     if (gameState.borderTeleport) this.teleport();
     if (gameState.borderBounce) this.borderBounce();
     this.updateDiv();
-    // since the pairwise force is recalculated each iteration it needs to be rezeroed each time.
-    if (gameState.gravity || gameState.repulsion) this.pairwiseForce = [0, 0];
+    this.pairwiseForce = [0, 0];
   }
 
-  // based on the current state of arrow keys, set the force of the player
   updatePlayerForce() {
     if (keyState.up) {
       if (keyState.left) {
@@ -88,7 +83,6 @@ export default class Blob {
     }
   }
 
-  // this function creates the random blob movement
   blobWander() {
     // if the blob is moving it has a chance of changing direction
     if (this.moving && Math.random() > 0.95) {
@@ -116,7 +110,6 @@ export default class Blob {
     return Math.sqrt(Math.pow(this.velocity[0], 2) + Math.pow(this.velocity[1], 2));
   }
 
-  // update the div position and size, this is what effectively links the javascript object to the DOM
   updateDiv() {
     this.blobDiv.style.left = (this.position[0] - this.radius) + 'px';
     this.blobDiv.style.bottom = (this.position[1] - this.radius) + 'px';
@@ -124,13 +117,11 @@ export default class Blob {
     this.blobDiv.style.width = this.radius * 2 + 'px';
   }
 
-  // This function updates the blobs position from it's current speed and position 
   move() {
     this.position[0] += this.velocity[0];
     this.position[1] += this.velocity[1];
   }
 
-  // This function decellerates the as a function of its radius and velocity, this means bigger blobs are slower
   viscosity() {
     // this.velocity[0] *= (1-drag*Math.sqrt(this.radius)*Math.pow(this.velocity[0],2));
     // this.velocity[1] *= (1-drag*Math.sqrt(this.radius)*Math.pow(this.velocity[1],2));
@@ -138,16 +129,12 @@ export default class Blob {
     this.velocity[1] *= (1 - drag * Math.sqrt(this.radius) * Math.abs(this.velocity[1]));
   }
 
-  // gradually shrinks blob as long as it is above a minimum size
   hunger() {
     if (this.radius > minSize) {
       this.radius *= (1 - appetite);
     }
   }
 
-  // these functions are necessary because this isn't quite a regular object but a 'class', this means
-  // that from the global context blob properties can't be set manually (blob[0].radius = x), they 
-  // have to be asked politely for information and be asked to change
   getRadius() {
     return this.radius;
   }
@@ -189,18 +176,13 @@ export default class Blob {
     }
   }
 
-  // this function handles what happens when a blob nears the edge of screen
   borderBounce() {
-    // if the blob is off the left hand side of the screen
     if (this.position[0] < -this.radius) {
-      // apply force proportional to it's distance off screen
       this.velocity[0] -= borderElasticity * (this.position[0] + this.radius);
-      // and vice versa
     } else if (this.position[0] > this.radius + windowSize.horizontal) {
       this.velocity[0] -= borderElasticity * (this.position[0] - this.radius - windowSize.horizontal);
     }
 
-    // same for vertical
     if (this.position[1] < -this.radius) {
       this.velocity[1] -= borderElasticity * (this.position[1] + this.radius);
     } else if (this.position[1] > this.radius + windowSize.vertical) {
@@ -208,7 +190,6 @@ export default class Blob {
     }
   }
 
-  // When a blob leaves the screen, teleport it to the other side.
   teleport() {
     this.position[0] = ((this.position[0] + windowSize.horizontal) % (windowSize.horizontal));
     this.position[1] = ((this.position[1] + windowSize.vertical) % (windowSize.vertical));
