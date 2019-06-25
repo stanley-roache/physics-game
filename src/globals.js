@@ -31,5 +31,8 @@ window.GLOBALS = {
   R: -0.5,
   minSize: 10,
   borderElasticity: 0.005,
-  fps: 50
+  fps: 50,
+  globalOpacity: 1,
+  opacityIncrement: 0.005,
+  faderInterval: null
 }

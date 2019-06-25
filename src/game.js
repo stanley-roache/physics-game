@@ -12,7 +12,10 @@ let {
   initialSize,
   initialPos,
   maxPop,
-  fps
+  fps,
+  opacityIncrement,
+  globalOpacity,
+  faderInterval
 } = window.GLOBALS
 
 export default function start() {
@@ -28,6 +31,25 @@ export default function start() {
 
   setInterval(iteration, 1000 / fps)
 };
+
+function setFader(finalOpacity) {
+  clearInterval(faderInterval);
+  faderInterval = setInterval(incrementOpacity, 1000 / fps);
+
+  function incrementOpacity() {
+    const sign = Math.sign(finalOpacity - globalOpacity);
+    globalOpacity = globalOpacity + sign * opacityIncrement;
+
+    blobs.forEach(blob => {
+      blob.setOpacity(sign 
+        ? Math.max(globalOpacity, blob.getOpacity())
+        : Math.min(globalOpacity, blob.getOpacity())
+      )
+    })
+
+    if (globalOpacity == finalOpacity) clearInterval(faderInterval);
+  }
+}
 
 function createPlayer() {
   player = new Blob(
@@ -71,6 +93,7 @@ window.iteration = function() {
           continue;
         } else {
           blobs[i] = blobs[i].consume(player);
+          blobs[i].setOpacity(1);
           playerDeath();
         }
       } else {
@@ -100,13 +123,7 @@ window.iteration = function() {
 function playerDeath() {
   player = null;
   toggleInstructions();
-  revealAll();
-}
-
-function revealAll() {
-  blobs.forEach(blob => {
-    blob.setOpacity(1);
-  })
+  setFader(1);
 }
 
 function repopulate() {
@@ -205,6 +222,8 @@ window.keyPress = function (e) {
       if (!player) {
         createPlayer();
         toggleInstructions();
+        globalOpacity = 0;
+        clearInterval(faderInterval);
       } 
       break;
     default:

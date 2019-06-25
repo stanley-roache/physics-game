@@ -13,7 +13,8 @@ let {
   G,
   R,
   minSize,
-  borderElasticity
+  borderElasticity,
+  globalOpacity
 } = window.GLOBALS
 
 export default class Blob {
@@ -223,21 +224,30 @@ export default class Blob {
 
     // removes old divs from html
     other.deleteDiv();
+    const currentOpacity = this.getOpacity();
     this.deleteDiv();
 
     playSound();
 
     // returns new Blob
-    return new Blob(
+    const newBlob = new Blob(
       newRadius,
       newPosition,
       newVelocity,
       playerEats
     );
+
+    newBlob.setOpacity(currentOpacity);
+
+    return newBlob;
   }
 
   setOpacity(opac) {
     this.blobDiv.style.opacity = opac;
+  }
+
+  getOpacity() {
+    return this.blobDiv.style.opacity;
   }
 
   // This function checks how far apart two blobs are, either their surfaces or their centres
