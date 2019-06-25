@@ -61,8 +61,8 @@ window.iteration = function() {
     blobs[i].updateMovement();
 
     if (player) {
-      let distance = Blob.getDistance(blobs[i], player, false);
-      if (distance < 0) {
+      let distanceFromPlayer = Blob.getDistance(blobs[i], player, false);
+      if (distanceFromPlayer < 0) {
         if (player.biggerThan(blobs[i])) {
           const currentForce = player.getForce();
           player = player.consume(blobs[i], true);
@@ -75,7 +75,7 @@ window.iteration = function() {
         }
       } else {
         // apply opacity to the blob so that it gradually comes into view only near the player
-        blobs[i].setOpacity(Math.max(1 - (distance / viewDistance), 0));
+        blobs[i].setOpacity(applyFieldOfView(distanceFromPlayer));
         Blob.pairwiseInteraction(player, blobs[i]);
       }
     }
@@ -209,6 +209,10 @@ window.keyPress = function (e) {
       break;
     default:
   }
+}
+
+function applyFieldOfView(distance) {
+  return Math.max(1 - (distance / viewDistance), 0)
 }
 
 function zeroTotalMomentumAndPosition() {
