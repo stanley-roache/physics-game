@@ -222,8 +222,8 @@ window.keyPress = function (e) {
       if (!player) {
         createPlayer();
         toggleInstructions();
-        globalOpacity = 0;
         clearInterval(faderInterval);
+        setFader(0);
       } 
       break;
     default:
@@ -231,7 +231,7 @@ window.keyPress = function (e) {
 }
 
 function applyFieldOfView(distance) {
-  return Math.max(1 - (distance / viewDistance), 0)
+  return Math.max(1 - (distance / viewDistance), globalOpacity)
 }
 
 function zeroTotalMomentumAndPosition() {
