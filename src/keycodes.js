@@ -9,6 +9,7 @@ export default {
     t: 84,
     b: 66,
     z: 90,
+    v: 86,
     a: 65,
     space: 32
 }

@@ -179,8 +179,6 @@ window.keyDown = function (e) {
     case keys.r:
       gameState.gravity = false;
       gameState.repulsion = true; break;
-    case keys.f:
-      gameState.drag = false; break;
     default: 
   }
   if (player) player.updatePlayerForce();
@@ -202,8 +200,8 @@ window.keyUp = function (e) {
     case keys.r:
       gameState.repulsion = false;
       pairwiseForceStrength = 0; break;
-    case keys.f:
-      gameState.drag = true; break;
+    case keys.v:
+      gameState.drag = !gameState.drag; break;
     case keys.t:
       gameState.borderTeleport = !gameState.borderTeleport;
       gameState.borderBounce = !gameState.borderTeleport; break;
