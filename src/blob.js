@@ -1,5 +1,12 @@
 import { playSound } from './sound'
 import { getGameWindow } from './window'
+import {
+  add,
+  sub,
+  product,
+  multiply,
+  mag
+} from './vectorOperations';
 
 let {
   windowSize,
@@ -104,8 +111,12 @@ export default class Blob {
   newRandomDirection() {
     let angle = Math.random() * 2 * Math.PI;
     let power = Math.random();
-    this.force[0] = Math.cos(angle) * power;
-    this.force[1] = Math.sin(angle) * power;
+    this.force = multiply(
+      power,
+      [Math.cos(angle), Math.sin(angle)]
+    );
+    //this.force[0] = Math.cos(angle) * power;
+    //this.force[1] = Math.sin(angle) * power;
   }
 
   toggleMoving() {
@@ -114,10 +125,7 @@ export default class Blob {
 
   // definitely unnecessary but I'll levae in case
   getAbsVel() {
-    return Math.sqrt(
-      Math.pow(this.velocity[0], 2) +
-      Math.pow(this.velocity[1], 2)
-    );
+    return mag(this.velocity);
   }
 
   updateDiv() {
@@ -128,8 +136,12 @@ export default class Blob {
   }
 
   move() {
-    this.position[0] += this.velocity[0];
-    this.position[1] += this.velocity[1];
+    this.position = add(
+      this.position,
+      this.velocity
+    );
+    //this.position[0] += this.velocity[0];
+    //this.position[1] += this.velocity[1];
   }
 
   viscosity() {
@@ -164,20 +176,35 @@ export default class Blob {
     this.force = force;
   }
   adjustVelocityBy(adjustment) {
-    this.velocity[0] += adjustment[0];
-    this.velocity[1] += adjustment[1];
+    this.velocity = add(
+      this.velocity,
+      this.adjustment
+    );
+    //this.velocity[0] += adjustment[0];
+    //this.velocity[1] += adjustment[1];
   }
   adjustPositionBy(adjustment) {
-    this.position[0] += adjustment[0];
-    this.position[1] += adjustment[1];
+    this.position = add(
+      this.position,
+      this.adjustment
+    );
+    //this.position[0] += adjustment[0];
+    //this.position[1] += adjustment[1];
   }
 
   // accelerate the blob
   accelerate() {
     // this component is the blobs own movement, player or otherwise
     if (gameState.drag) {
-      this.velocity[0] += speedUp * this.force[0];
-      this.velocity[1] += speedUp * this.force[1];
+      this.velocity = add(
+        this.velocity,
+        multiply(
+          speedUp,
+          this.force
+        )
+      );
+      //this.velocity[0] += speedUp * this.force[0];
+      //this.velocity[1] += speedUp * this.force[1];
     }
     // this is the effect of pairwise forces on the blob
     if (gameState.gravity || gameState.repulsion) {
