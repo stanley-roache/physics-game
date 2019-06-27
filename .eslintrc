@@ -1,0 +1,9 @@
+{
+  "plugins": ["prettier"],
+  "extends": ["prettier"],
+  "parser": "babel-eslint",
+  "rules": {
+    "prettier/prettier": "warn",
+    "function-paren-newline": ["warn", "multiline-arguments"]
+  }
+}

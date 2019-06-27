@@ -2,7 +2,7 @@ window.GLOBALS = {
   blobs: [],
   windowSize: {
     horizontal: 0,
-    vertical: 0
+    vertical: 0,
   },
   keyState: {
     left: false,
@@ -34,5 +34,5 @@ window.GLOBALS = {
   fps: 50,
   globalOpacity: 1,
   opacityIncrement: 0.005,
-  faderInterval: null
-}
+  faderInterval: null,
+};

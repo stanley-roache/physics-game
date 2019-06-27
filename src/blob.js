@@ -14,11 +14,17 @@ let {
   R,
   minSize,
   borderElasticity,
-  globalOpacity
-} = window.GLOBALS
+  globalOpacity,
+} = window.GLOBALS;
 
 export default class Blob {
-  constructor(radius, position, velocity = [0, 0], isPlayer = false, pairwiseForce = [0, 0]) {
+  constructor(
+    radius,
+    position,
+    velocity = [0, 0],
+    isPlayer = false,
+    pairwiseForce = [0, 0]
+  ) {
     this.radius = radius;
     this.mass = Math.pow(radius, 3);
     this.position = position;
@@ -80,7 +86,7 @@ export default class Blob {
       // left
       this.force = [-1, 0];
     } else {
-      this.force = [0, 0]
+      this.force = [0, 0];
     }
   }
 
@@ -103,17 +109,20 @@ export default class Blob {
   }
 
   toggleMoving() {
-    this.moving = !(this.moving);
+    this.moving = !this.moving;
   }
 
   // definitely unnecessary but I'll levae in case
   getAbsVel() {
-    return Math.sqrt(Math.pow(this.velocity[0], 2) + Math.pow(this.velocity[1], 2));
+    return Math.sqrt(
+      Math.pow(this.velocity[0], 2) +
+      Math.pow(this.velocity[1], 2)
+    );
   }
 
   updateDiv() {
-    this.blobDiv.style.left = (this.position[0] - this.radius) + 'px';
-    this.blobDiv.style.bottom = (this.position[1] - this.radius) + 'px';
+    this.blobDiv.style.left = this.position[0] - this.radius + 'px';
+    this.blobDiv.style.bottom = this.position[1] - this.radius + 'px';
     this.blobDiv.style.height = this.radius * 2 + 'px';
     this.blobDiv.style.width = this.radius * 2 + 'px';
   }
@@ -126,13 +135,13 @@ export default class Blob {
   viscosity() {
     // this.velocity[0] *= (1-drag*Math.sqrt(this.radius)*Math.pow(this.velocity[0],2));
     // this.velocity[1] *= (1-drag*Math.sqrt(this.radius)*Math.pow(this.velocity[1],2));
-    this.velocity[0] *= (1 - drag * Math.sqrt(this.radius) * Math.abs(this.velocity[0]));
-    this.velocity[1] *= (1 - drag * Math.sqrt(this.radius) * Math.abs(this.velocity[1]));
+    this.velocity[0] *= 1 - drag * Math.sqrt(this.radius) * Math.abs(this.velocity[0]);
+    this.velocity[1] *= 1 - drag * Math.sqrt(this.radius) * Math.abs(this.velocity[1]);
   }
 
   hunger() {
     if (this.radius > minSize) {
-      this.radius *= (1 - appetite);
+      this.radius *= 1 - appetite;
     }
   }
 
@@ -192,8 +201,8 @@ export default class Blob {
   }
 
   teleport() {
-    this.position[0] = ((this.position[0] + windowSize.horizontal) % (windowSize.horizontal));
-    this.position[1] = ((this.position[1] + windowSize.vertical) % (windowSize.vertical));
+    this.position[0] = (this.position[0] + windowSize.horizontal) % windowSize.horizontal;
+    this.position[1] = (this.position[1] + windowSize.vertical) % windowSize.vertical;
   }
 
   deleteDiv() {
@@ -201,26 +210,31 @@ export default class Blob {
   }
 
   biggerThan(other) {
-    return (this.radius >= other.radius);
+    return this.radius >= other.radius;
   }
 
   // given two blobs, this function returns a single blob such that mass, centre of mass and momentum are conserved
   consume(other, playerEats = false) {
     // relative mass
-    const weighting = Math.pow(other.radius, 3) / (Math.pow(this.radius, 3) + Math.pow(other.radius, 3));
+    const weighting =
+      Math.pow(other.radius, 3) /
+      (Math.pow(this.radius, 3) + Math.pow(other.radius, 3));
     // calculates centre of mass of both blobs
     let newPosition = [
       this.position[0] + (other.position[0] - this.position[0]) * weighting,
-      this.position[1] + (other.position[1] - this.position[1]) * weighting
+      this.position[1] + (other.position[1] - this.position[1]) * weighting,
     ];
     // calculates velocity based on total momentum
     let newVelocity = [
       this.velocity[0] + (other.velocity[0] - this.velocity[0]) * weighting,
-      this.velocity[1] + (other.velocity[1] - this.velocity[1]) * weighting
+      this.velocity[1] + (other.velocity[1] - this.velocity[1]) * weighting,
     ];
 
     // new size that conserves mass|volume
-    let newRadius = Math.pow((Math.pow(this.radius, 3) + Math.pow(other.radius, 3)), 1 / 3);
+    let newRadius = Math.pow(
+      Math.pow(this.radius, 3) + Math.pow(other.radius, 3),
+      1 / 3
+    );
 
     // removes old divs from html
     other.deleteDiv();
@@ -253,29 +267,29 @@ export default class Blob {
   // This function checks how far apart two blobs are, either their surfaces or their centres
   static getDistance(a, b, fromCentre) {
     const centre = Math.sqrt(
-      Math.pow((a.position[0] - b.position[0]), 2) +
-      Math.pow((a.position[1] - b.position[1]), 2)
+      Math.pow(a.position[0] - b.position[0], 2) +
+      Math.pow(a.position[1] - b.position[1], 2)
     );
-    return (fromCentre) 
+    return fromCentre
       ? centre
-      : (centre - (a.radius + b.radius));
+      : centre - (a.radius + b.radius);
   }
 
   // deal with all pairwise interactions between blobs, assumes player will be passed first if at all (player)
   static pairwiseInteraction(a, b) {
     // gravity and repulsion interaction
     if (gameState.gravity || gameState.repulsion) {
-      const distance = Blob.getDistance(a, b, true)
+      const distance = Blob.getDistance(a, b, true);
       let magnitude = pairwiseForceStrength * a.mass * b.mass / Math.pow(distance, 2);
 
-      magnitude *= (gameState.gravity ? G : R)
+      magnitude *= gameState.gravity ? G : R;
 
-      const forceTermHorizontal = magnitude * (a.position[0] - b.position[0]) / distance,
-            forceTermVertical = magnitude * (a.position[1] - b.position[1]) / distance;
+      const forceTermHorizontal = magnitude * (a.position[0] - b.position[0]) / distance;
+      const forceTermVertical = magnitude * (a.position[1] - b.position[1]) / distance;
 
       a.pairwiseForce[0] -= forceTermHorizontal;
       a.pairwiseForce[1] -= forceTermVertical;
-      b.pairwiseForce[0] += forceTermHorizontal
+      b.pairwiseForce[0] += forceTermHorizontal;
       b.pairwiseForce[1] += forceTermVertical;
     }
   }

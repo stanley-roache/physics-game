@@ -1,3 +1,3 @@
-import './globals'
-import start from './game'
-window.onload = start
+import './globals';
+import start from './game';
+window.onload = start;

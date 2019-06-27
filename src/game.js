@@ -1,6 +1,6 @@
-import Blob from './blob'
-import { getGameWindow } from './window'
-import keys from './keycodes'
+import Blob from './blob';
+import { getGameWindow } from './window';
+import keys from './keycodes';
 
 let {
   blobs,
@@ -15,8 +15,8 @@ let {
   fps,
   opacityIncrement,
   globalOpacity,
-  faderInterval
-} = window.GLOBALS
+  faderInterval,
+} = window.GLOBALS;
 
 export default function start() {
   updateWindowSize();
@@ -29,8 +29,8 @@ export default function start() {
 
   toggleInstructions();
 
-  setInterval(iteration, 1000 / fps)
-};
+  setInterval(iteration, 1000 / fps);
+}
 
 function setFader(finalOpacity) {
   clearInterval(faderInterval);
@@ -41,11 +41,12 @@ function setFader(finalOpacity) {
     globalOpacity = globalOpacity + sign * opacityIncrement;
 
     blobs.forEach(blob => {
-      blob.setOpacity(sign 
-        ? Math.max(globalOpacity, blob.getOpacity())
-        : Math.min(globalOpacity, blob.getOpacity())
-      )
-    })
+      blob.setOpacity(
+        sign
+          ? Math.max(globalOpacity, blob.getOpacity())
+          : Math.min(globalOpacity, blob.getOpacity())
+      );
+    });
 
     if (globalOpacity == finalOpacity) clearInterval(faderInterval);
   }
@@ -106,8 +107,8 @@ window.iteration = function() {
     for (let j = i + 1; j < blobs.length; j++) {
       if (!blobs[j]) continue;
       if (Blob.getDistance(blobs[i], blobs[j], false) < 0) {
-        blobs[i] = (blobs[i].biggerThan(blobs[j])) 
-          ? blobs[i].consume(blobs[j]) 
+        blobs[i] = blobs[i].biggerThan(blobs[j])
+          ? blobs[i].consume(blobs[j])
           : blobs[j].consume(blobs[i]);
         blobs[j] = null;
       } else {
@@ -118,7 +119,7 @@ window.iteration = function() {
   }
 
   blobs = newBlobs;
-}
+};
 
 function playerDeath() {
   player = null;
@@ -130,7 +131,11 @@ function repopulate() {
   if (blobs.length < maxPop && Math.random() > 0.99) addBlob();
 }
 
-function addBlob(radius = getCreationRadius(), pos = getRandomBorderPosition(), vel = getRandomStartingVelocity()) {
+function addBlob(
+  radius = getCreationRadius(),
+  pos = getRandomBorderPosition(),
+  vel = getRandomStartingVelocity()
+) {
   let newblob = new Blob(
     radius,
     pos,
@@ -156,65 +161,81 @@ function getCreationRadius() {
   return 0.8 * initialSize * Math.pow(5, Math.pow(Math.random(), 2));
 }
 
-window.updateWindowSize = function () {
+window.updateWindowSize = function() {
   let windowDimensions = getGameWindow().getBoundingClientRect();
   windowSize.horizontal = windowDimensions.width;
   windowSize.vertical = windowDimensions.height;
   initialPos = [windowSize.horizontal / 2, windowSize.vertical / 2];
-}
+};
 
-window.keyDown = function (e) {
+window.keyDown = function(e) {
   switch (e.keyCode) {
     case keys.up:
-      keyState.up = true; break;
+      keyState.up = true;
+      break;
     case keys.down:
-      keyState.down = true; break;
+      keyState.down = true;
+      break;
     case keys.left:
-      keyState.left = true; break;
+      keyState.left = true;
+      break;
     case keys.right:
-      keyState.right = true; break;
+      keyState.right = true;
+      break;
     case keys.g:
       gameState.gravity = true;
-      gameState.repulsion = false; break;
-    case keys.r:
-      gameState.gravity = false;
-      gameState.repulsion = true; break;
-    default: 
-  }
-  if (player) player.updatePlayerForce();
-}
-
-window.keyUp = function (e) {
-  switch (e.keyCode) {
-    case keys.right:
-      keyState.right = false; break;
-    case keys.left:
-      keyState.left = false; break;
-    case keys.up:
-      keyState.up = false; break;
-    case keys.down:
-      keyState.down = false; break;
-    case keys.g:
-      gameState.gravity = false;
-      pairwiseForceStrength = 0; break;
-    case keys.r:
       gameState.repulsion = false;
-      pairwiseForceStrength = 0; break;
-    case keys.v:
-      gameState.drag = !gameState.drag; break;
-    case keys.t:
-      gameState.borderTeleport = !gameState.borderTeleport;
-      gameState.borderBounce = !gameState.borderTeleport; break;
-    case keys.z:
-      zeroTotalMomentumAndPosition(); break;
-    case keys.a:
-      addBlob(); break;
+      break;
+    case keys.r:
+      gameState.gravity = false;
+      gameState.repulsion = true;
+      break;
     default:
   }
   if (player) player.updatePlayerForce();
-}
+};
 
-window.keyPress = function (e) {
+window.keyUp = function(e) {
+  switch (e.keyCode) {
+    case keys.right:
+      keyState.right = false;
+      break;
+    case keys.left:
+      keyState.left = false;
+      break;
+    case keys.up:
+      keyState.up = false;
+      break;
+    case keys.down:
+      keyState.down = false;
+      break;
+    case keys.g:
+      gameState.gravity = false;
+      pairwiseForceStrength = 0;
+      break;
+    case keys.r:
+      gameState.repulsion = false;
+      pairwiseForceStrength = 0;
+      break;
+    case keys.v:
+      gameState.drag = !gameState.drag;
+      break;
+    case keys.t:
+      gameState.borderTeleport = !gameState.borderTeleport;
+      gameState.borderBounce = !gameState.borderTeleport;
+      break;
+    case keys.z:
+      zeroTotalMomentumAndPosition();
+      break;
+    case keys.a:
+      addBlob();
+      break;
+    default:
+  }
+  if (player) player.updatePlayerForce();
+};
+
+window.keyPress = function(e) {
   switch (e.keyCode) {
     case keys.space:
       if (!player) {
@@ -222,21 +243,23 @@ window.keyPress = function (e) {
         toggleInstructions();
         clearInterval(faderInterval);
         setFader(0);
-      } 
+      }
       break;
     default:
   }
-}
+};
 
 function applyFieldOfView(distance) {
-  return Math.max(1 - (distance / viewDistance), globalOpacity)
+  return Math.max(1 - distance / viewDistance, globalOpacity);
 }
 
 function zeroTotalMomentumAndPosition() {
   let totalMomentum = [0, 0],
     totalCOM = [0, 0],
     totalMass = 0,
-    allBlobs = (player) ? blobs.concat([player]) : blobs;
+    allBlobs = player
+      ? blobs.concat([player])
+      : blobs;
   // sum momentum, COM and mass
   for (let i = 0; i < allBlobs.length; i++) {
     let currentMass = allBlobs[i].getMass(),
@@ -248,8 +271,14 @@ function zeroTotalMomentumAndPosition() {
     totalCOM[0] += currentPosition[0] * currentMass;
     totalCOM[1] += currentPosition[1] * currentMass;
   }
-  let velocityShift = [-totalMomentum[0] / totalMass, -totalMomentum[1] / totalMass],
-    positionShift = [initialPos[0] - totalCOM[0] / totalMass, initialPos[1] - totalCOM[1] / totalMass];
+  let velocityShift = [
+    -totalMomentum[0] / totalMass,
+    -totalMomentum[1] / totalMass,
+  ];
+  let positionShift = [
+    initialPos[0] - totalCOM[0] / totalMass,
+    initialPos[1] - totalCOM[1] / totalMass,
+  ];
 
   // adjust all blobs
   for (let i = 0; i < allBlobs.length; i++) {
@@ -257,4 +286,3 @@ function zeroTotalMomentumAndPosition() {
     allBlobs[i].adjustPositionBy(positionShift);
   }
 }
-
