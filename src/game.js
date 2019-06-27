@@ -1,6 +1,13 @@
 import Blob from './blob';
 import { getGameWindow } from './window';
 import keys from './keycodes';
+import {
+  add,
+  sub,
+  product,
+  multiply,
+  mag
+} from './vectorOperations';
 
 let {
   blobs,
@@ -266,19 +273,32 @@ function zeroTotalMomentumAndPosition() {
       currentVelocity = allBlobs[i].getVel(),
       currentPosition = allBlobs[i].getPos();
     totalMass += currentMass;
-    totalMomentum[0] += currentVelocity[0] * currentMass;
-    totalMomentum[1] += currentVelocity[1] * currentMass;
-    totalCOM[0] += currentPosition[0] * currentMass;
-    totalCOM[1] += currentPosition[1] * currentMass;
+    totalMomentum = add(
+      totalMomentum,
+      multiply(
+        currentMass,
+        currentVelocity
+      )
+    );
+    totalCOM = add(
+      totalCOM,
+      multiply(
+        currentMass,
+        currentPosition
+      )
+    );
   }
-  let velocityShift = [
-    -totalMomentum[0] / totalMass,
-    -totalMomentum[1] / totalMass,
-  ];
-  let positionShift = [
-    initialPos[0] - totalCOM[0] / totalMass,
-    initialPos[1] - totalCOM[1] / totalMass,
-  ];
+  let velocityShift = multiply(
+    -1/totalMass,
+    totalMomentum
+  );
+  let positionShift = sub(
+    initialPos,
+    multiply(
+      1/totalMass,
+      totalCOM
+    )
+  );
 
   // adjust all blobs
   for (let i = 0; i < allBlobs.length; i++) {
