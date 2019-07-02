@@ -243,7 +243,7 @@ window.keyPress = function(e) {
 };
 
 function applyFieldOfView(distance, blobRadius) {
-  return 1 - distance / viewDistance;
+  return 1 - distance / (viewDistance * Math.sqrt(blobRadius / 20));
 }
 
 function zeroTotalMomentumAndPosition() {
