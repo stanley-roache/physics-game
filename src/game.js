@@ -1,13 +1,7 @@
 import Blob from './blob';
 import { getGameWindow } from './window';
 import keys from './keycodes';
-import {
-  add,
-  sub,
-  product,
-  multiply,
-  mag
-} from './vectorOperations';
+import { add, sub, product, multiply, mag } from './vectorOperations';
 
 let {
   blobs,
@@ -45,27 +39,14 @@ function setFader(finalOpacity) {
 
   function incrementOpacity() {
     const sign = Math.sign(finalOpacity - globalOpacity);
-    globalOpacity = globalOpacity + sign * opacityIncrement;
 
-    blobs.forEach(blob => {
-      blob.setOpacity(
-        sign
-          ? Math.max(globalOpacity, blob.getOpacity())
-          : Math.min(globalOpacity, blob.getOpacity())
-      );
-    });
-
-    if (globalOpacity == finalOpacity) clearInterval(faderInterval);
+    if (sign != 0) globalOpacity += sign * opacityIncrement;
+    else clearInterval(faderInterval);
   }
 }
 
 function createPlayer() {
-  player = new Blob(
-    initialSize,
-    [...initialPos],
-    [0, 0],
-    true
-  );
+  player = new Blob(initialSize, [...initialPos], [0, 0], true);
 }
 
 function toggleInstructions() {
@@ -86,12 +67,12 @@ window.iteration = function() {
 
   for (let i = 0; i < blobs.length; i++) {
     if (!blobs[i]) continue;
-
+    let distanceFromPlayer;
     blobs[i].blobWander();
     blobs[i].updateMovement();
 
     if (player) {
-      let distanceFromPlayer = Blob.getDistance(blobs[i], player, false);
+      distanceFromPlayer = Blob.getDistance(blobs[i], player, false);
       if (distanceFromPlayer < 0) {
         if (player.biggerThan(blobs[i])) {
           const currentForce = player.getForce();
@@ -105,11 +86,17 @@ window.iteration = function() {
           playerDeath();
         }
       } else {
-        // apply opacity to the blob so that it gradually comes into view only near the player
-        blobs[i].setOpacity(applyFieldOfView(distanceFromPlayer));
         Blob.pairwiseInteraction(player, blobs[i]);
       }
     }
+
+    blobs[i].setOpacity(
+      Math.max(
+        player ? applyFieldOfView(distanceFromPlayer, blobs[i].getRadius()) : 0,
+        blobs[i].getOpacity() - opacityIncrement,
+        globalOpacity
+      )
+    );
 
     for (let j = i + 1; j < blobs.length; j++) {
       if (!blobs[j]) continue;
@@ -143,21 +130,20 @@ function addBlob(
   pos = getRandomBorderPosition(),
   vel = getRandomStartingVelocity()
 ) {
-  let newblob = new Blob(
-    radius,
-    pos,
-    vel,
-    false
-  );
+  let newblob = new Blob(radius, pos, vel, false);
+  newblob.setOpacity(globalOpacity);
   blobs.push(newblob);
 }
 
 function getRandomBorderPosition() {
   const x = Math.random() * 4;
-  return (x < 1) ? entryPoint = [0, windowSize.vertical * x] :
-    (x < 2) ? [windowSize.horizontal * (x - 1), 0] :
-    (x < 3) ? [windowSize.horizontal, windowSize.vertical * (x - 2)] :
-    [windowSize.horizontal * (x - 3), 0]
+  return x < 1
+    ? (entryPoint = [0, windowSize.vertical * x])
+    : x < 2
+    ? [windowSize.horizontal * (x - 1), 0]
+    : x < 3
+    ? [windowSize.horizontal, windowSize.vertical * (x - 2)]
+    : [windowSize.horizontal * (x - 3), 0];
 }
 
 function getRandomStartingVelocity() {
@@ -256,49 +242,26 @@ window.keyPress = function(e) {
   }
 };
 
-function applyFieldOfView(distance) {
-  return Math.max(1 - distance / viewDistance, globalOpacity);
+function applyFieldOfView(distance, blobRadius) {
+  return 1 - distance / viewDistance;
 }
 
 function zeroTotalMomentumAndPosition() {
   let totalMomentum = [0, 0],
     totalCOM = [0, 0],
     totalMass = 0,
-    allBlobs = player
-      ? blobs.concat([player])
-      : blobs;
+    allBlobs = player ? blobs.concat([player]) : blobs;
   // sum momentum, COM and mass
   for (let i = 0; i < allBlobs.length; i++) {
     let currentMass = allBlobs[i].getMass(),
       currentVelocity = allBlobs[i].getVel(),
       currentPosition = allBlobs[i].getPos();
     totalMass += currentMass;
-    totalMomentum = add(
-      totalMomentum,
-      multiply(
-        currentMass,
-        currentVelocity
-      )
-    );
-    totalCOM = add(
-      totalCOM,
-      multiply(
-        currentMass,
-        currentPosition
-      )
-    );
+    totalMomentum = add(totalMomentum, multiply(currentMass, currentVelocity));
+    totalCOM = add(totalCOM, multiply(currentMass, currentPosition));
   }
-  let velocityShift = multiply(
-    -1/totalMass,
-    totalMomentum
-  );
-  let positionShift = sub(
-    initialPos,
-    multiply(
-      1/totalMass,
-      totalCOM
-    )
-  );
+  let velocityShift = multiply(-1 / totalMass, totalMomentum);
+  let positionShift = sub(initialPos, multiply(1 / totalMass, totalCOM));
 
   // adjust all blobs
   for (let i = 0; i < allBlobs.length; i++) {
